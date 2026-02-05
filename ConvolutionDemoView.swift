@@ -51,7 +51,7 @@ struct ConvolutionDemoView: View{
                 .foregroundStyle(.secondary)
         }
         .padding()
-        .task { vm.setup() }
+        .task { vm.setup(assetName: "miku") }
     }
 
     private var kernelOverlay: some View {
@@ -87,9 +87,19 @@ struct ConvolutionDemoView: View{
                     .buttonStyle(.bordered)
             }
 
+            Picker("Kernel", selection: $vm.selectedPreset) {
+                ForEach(KernelPreset.allCases) { preset in
+                    Text(preset.rawValue).tag(preset)
+                }
+            }
+            .pickerStyle(.menu)
+            .onChange(of: vm.selectedPreset) { _, newValue in
+                vm.setPreset(newValue)
+            }
+
             HStack {
                 Text("Speed")
-                Slider(value: $vm.pixelsPerTick, in: 1...10000, step: 1)
+                Slider(value: $vm.pixelsPerTick, in: 50...5000, step: 1)
                 Text("\(Int(vm.pixelsPerTick)) px/tick")
                     .monospacedDigit()
                     .frame(width: 120, alignment: .trailing)
