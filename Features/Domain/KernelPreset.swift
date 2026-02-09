@@ -18,15 +18,29 @@ enum KernelPreset: String, CaseIterable, Identifiable {
 
     var id: String { rawValue }
 
-    var size: Int {
+    var isBlur: Bool {
         switch self {
-        case .boxBlur: return 51
-        case .gaussianBlur: return 51
-        case .sharpen, .edgeDetect, .sobelX, .sobelY, .laplacian: return 3
+        case .boxBlur, .gaussianBlur: return true
+        default: return false
         }
     }
 
-    func makeKernel() -> [Float] {
+    func kernelSize(width: Int, height: Int, intensity: BlurIntensity) -> Int {
+        switch self {
+        case .boxBlur, .gaussianBlur:
+            let minSide = max(1, min(width, height))
+            let raw = Int(Double(minSide) * intensity.fractionOfMinSide)
+
+            let clamped = min(max(raw, 7), 151)
+
+            return (clamped % 2 == 1) ? clamped : (clamped + 1)
+
+        case .sharpen, .edgeDetect, .sobelX, .sobelY, .laplacian:
+            return 3
+        }
+    }
+
+    func makeKernel(size: Int) -> [Float] {
         switch self {
         case .boxBlur:
             return Self.boxBlur(size: size)

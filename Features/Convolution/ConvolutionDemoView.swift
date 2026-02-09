@@ -51,7 +51,7 @@ struct ConvolutionDemoView: View{
                 .foregroundStyle(.secondary)
         }
         .padding()
-        .task { vm.setup(assetName: "miku") }
+        .task { vm.setup(assetName: "cat") }
     }
 
     private var kernelOverlay: some View {
@@ -62,8 +62,8 @@ struct ConvolutionDemoView: View{
             let x = w * CGFloat(vm.cursorX) / CGFloat(max(1, vm.imageWidth))
             let y = h * CGFloat(vm.cursorY) / CGFloat(max(1, vm.imageHeight))
 
-            let kw = w * CGFloat(vm.kernelSize) / CGFloat(max(1, vm.imageWidth))
-            let kh = h * CGFloat(vm.kernelSize) / CGFloat(max(1, vm.imageHeight))
+            let kw = w * CGFloat(vm.currentKernelSize) / CGFloat(max(1, vm.imageWidth))
+            let kh = h * CGFloat(vm.currentKernelSize) / CGFloat(max(1, vm.imageHeight))
 
             Rectangle()
                 .strokeBorder(.yellow, lineWidth: 2)
@@ -87,19 +87,37 @@ struct ConvolutionDemoView: View{
                     .buttonStyle(.bordered)
             }
 
-            Picker("Kernel", selection: $vm.selectedPreset) {
-                ForEach(KernelPreset.allCases) { preset in
-                    Text(preset.rawValue).tag(preset)
+            HStack {
+                Picker("Kernel", selection: $vm.selectedPreset) {
+                    ForEach(KernelPreset.allCases) { preset in
+                        Text(preset.rawValue).tag(preset)
+                    }
+                }
+                .pickerStyle(.menu)
+                .onChange(of: vm.selectedPreset) { _, newValue in
+                    vm.setPreset(newValue)
+                }
+                
+                if vm.selectedPreset.isBlur {
+                    Picker("Intensity", selection: $vm.blurIntensity) {
+                        ForEach(BlurIntensity.allCases) { intensity in
+                            Text(intensity.rawValue).tag(intensity)
+                        }
+                    }
+                    .pickerStyle(.menu)
+                    .onChange(of: vm.blurIntensity) { _, newValue in
+                        vm.setBlurIntensity(newValue)
+                    }
+                    .transition(.move(edge: .leading).combined(with: .opacity))
                 }
             }
-            .pickerStyle(.menu)
-            .onChange(of: vm.selectedPreset) { _, newValue in
-                vm.setPreset(newValue)
-            }
+            .animation(.linear(duration: 0.2), value: vm.selectedPreset.isBlur)
+
 
             HStack {
                 Text("Speed")
-                Slider(value: $vm.pixelsPerTick, in: 50...5000, step: 1)
+                LogSlider(value: $vm.pixelsPerTick, minValue: 1, maxValue: 1000, step: 1)
+
                 Text("\(Int(vm.pixelsPerTick)) px/tick")
                     .monospacedDigit()
                     .frame(width: 120, alignment: .trailing)

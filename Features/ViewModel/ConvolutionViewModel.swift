@@ -19,16 +19,22 @@ final class ConvolutionViewModel: ObservableObject {
     @Published var cursorY: Int = 0
     @Published var isRunning: Bool = false
 
-    @Published var pixelsPerTick: Double = 600
+    @Published var pixelsPerTick: Double = 100
 
     @Published private(set) var imageWidth: Int = 1
     @Published private(set) var imageHeight: Int = 1
 
-    var kernelSize: Int { selectedPreset.size }
+    @Published var blurIntensity: BlurIntensity = .medium
+
+    var currentKernelSize: Int {
+        selectedPreset.kernelSize(width: imageWidth, height: imageHeight, intensity: blurIntensity)
+    }
+
+    var currentKernel: [Float] {
+        selectedPreset.makeKernel(size: currentKernelSize)
+    }
 
     private let renderFPS: Double = 15
-
-    private var kernel: [Float] { selectedPreset.makeKernel() }
 
     private var input: [Float] = []
     private var fullOutput: [Float] = []
@@ -78,6 +84,23 @@ final class ConvolutionViewModel: ObservableObject {
         startComputeIfNeeded()
     }
 
+    func setBlurIntensity(_ intensity: BlurIntensity) {
+        guard intensity != blurIntensity else { return }
+        blurIntensity = intensity
+
+        guard selectedPreset.isBlur else { return }
+
+        stop()
+        cursorX = 0
+        cursorY = 0
+        fullOutput.removeAll(keepingCapacity: true)
+        revealedOutput = Array(repeating: 0, count: imageWidth * imageHeight)
+        isComputing = false
+
+        outputImage = makeOutputImage(from: revealedOutput)
+        startComputeIfNeeded()
+    }
+
     func togglePlay() {
         isRunning ? stop() : start()
     }
@@ -116,7 +139,7 @@ final class ConvolutionViewModel: ObservableObject {
         stopTimer()
         lastRenderTime = 0
 
-        timer = Timer.scheduledTimer(
+        let t = Timer.scheduledTimer(
             withTimeInterval: 1.0 / 60.0,
             repeats: true
         ) { [weak self] _ in
@@ -125,6 +148,9 @@ final class ConvolutionViewModel: ObservableObject {
                 self.tick()
             }
         }
+
+        RunLoop.main.add(t, forMode: .common)
+        timer = t
     }
 
     private func stopTimer() {
@@ -140,6 +166,15 @@ final class ConvolutionViewModel: ObservableObject {
         scheduleRenderIfNeeded()
 
         if cursorY >= imageHeight {
+            if fullOutput.isEmpty && isComputing {
+                return
+            }
+
+            if !fullOutput.isEmpty {
+                revealOutput(upToIndexExclusive: imageWidth * imageHeight)
+                scheduleRenderIfNeeded()
+            }
+
             stopTimer()
             isRunning = false
         }
@@ -185,8 +220,8 @@ final class ConvolutionViewModel: ObservableObject {
         let inputSnapshot = input
         let w = imageWidth
         let h = imageHeight
-        let k = kernel
-        let ks = kernelSize
+        let k = currentKernel
+        let ks = currentKernelSize
 
         computeTask?.cancel()
         computeTask = Task.detached(priority: .userInitiated) { [weak self] in
