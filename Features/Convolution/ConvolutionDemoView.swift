@@ -20,6 +20,7 @@ struct ConvolutionDemoView: View{
                     if let img = vm.originalUIImage {
                         Image(uiImage: img)
                             .resizable()
+                            .interpolation(.none)
                             .scaledToFit()
                             .overlay(kernelOverlay)
                             .clipped()
@@ -51,7 +52,7 @@ struct ConvolutionDemoView: View{
                 .foregroundStyle(.secondary)
         }
         .padding()
-        .task { vm.setup(assetName: "cat") }
+        .task { vm.setup(assetName: "moon2") }
     }
 
     private var kernelOverlay: some View {

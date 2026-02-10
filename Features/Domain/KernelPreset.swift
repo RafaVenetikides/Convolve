@@ -31,7 +31,7 @@ enum KernelPreset: String, CaseIterable, Identifiable {
             let minSide = max(1, min(width, height))
             let raw = Int(Double(minSide) * intensity.fractionOfMinSide)
 
-            let clamped = min(max(raw, 7), 151)
+            let clamped = min(max(raw, 3), 151)
 
             return (clamped % 2 == 1) ? clamped : (clamped + 1)
 

@@ -16,7 +16,7 @@ enum BlurIntensity: String, CaseIterable, Identifiable {
 
     var fractionOfMinSide: Double {
         switch self {
-        case .light: return 0.01
+        case .light: return 0.02
         case .medium: return 0.04
         case .strong: return 0.08
         }
