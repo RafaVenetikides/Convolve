@@ -8,6 +8,7 @@
 import SwiftUI
 
 struct MathDefinitionView: View {
+    @Environment(\.dismiss) private var dismiss
     @State private var isPressed = false
 
     var body: some View {
@@ -43,12 +44,34 @@ struct MathDefinitionView: View {
                     .foregroundStyle(.white)
                     .multilineTextAlignment(.leading)
                     .font(.system(size: 28))
+
+                    
+                    HStack() {
+                        Button {
+                            dismiss()
+                        } label: {
+                            Text("Back")
+                                .font(.system(size: 24))
+                                .padding(10)
+                        }
+                        .buttonStyle(.bordered)
+                        
+                        Spacer()
+                        
+                        Button {
+                            isPressed = true
+                        } label: {
+                            Text("Next")
+                                .font(.system(size: 24))
+                                .padding(10)
+                        }
+                        .buttonStyle(.borderedProminent)
+
                 }
                 .padding(.vertical, 40)
                 .padding(.horizontal, 20)
-            }
-            .onTapGesture {
-                isPressed = true
+
+                }
             }
             .navigationDestination(isPresented: $isPressed) {
                 ConvolutionOperationView()

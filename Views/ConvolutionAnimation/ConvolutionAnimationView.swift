@@ -218,7 +218,7 @@ struct ConvolutionAnimationView: View {
                     }
                 }
                 .buttonStyle(.bordered)
-                .disabled(vm.shift < 0)
+                .disabled(vm.stage == .original)
             }
         }
     }

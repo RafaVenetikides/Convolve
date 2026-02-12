@@ -67,12 +67,23 @@ struct IntroductionView: View {
                         .multilineTextAlignment(.leading)
                         .font(.system(size: 28))
 
+                        Spacer()
+
+                        HStack {
+                            Spacer()
+
+                            Button {
+                                isPressed = true
+                            } label: {
+                                Text("Next")
+                                    .font(.system(size: 24))
+                                    .padding(10)
+                            }
+                            .buttonStyle(.borderedProminent)
+                        }
                     }
                     .padding(.vertical, 40)
                     .padding(.horizontal, 20)
-                }
-                .onTapGesture {
-                    isPressed = true
                 }
                 .navigationDestination(isPresented: $isPressed) {
                     MathDefinitionView()
