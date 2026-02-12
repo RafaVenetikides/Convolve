@@ -52,7 +52,8 @@ struct ConvolutionDemoView: View{
                 .foregroundStyle(.secondary)
         }
         .padding()
-        .task { vm.setup(assetName: "moon2") }
+        .task { vm.setup(assetName: "cat") }
+        .navigationBarBackButtonHidden()
     }
 
     private var kernelOverlay: some View {

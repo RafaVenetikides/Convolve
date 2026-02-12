@@ -40,7 +40,6 @@ final class ConvolutionViewModel: ObservableObject {
     private var fullOutput: [Float] = []
     private var revealedOutput: [Float] = []
 
-    //    private var engine: ConvolutionEngine?
     private var timer: Timer?
     private var computeTask: Task<Void, Never>?
     private var isComputing = false
