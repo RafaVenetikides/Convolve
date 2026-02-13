@@ -19,25 +19,39 @@ struct ConvolutionOperationView: View {
                     Text("Operation")
                         .font(.system(size: 68))
                         .foregroundStyle(.cyan)
+                        .padding(.bottom, 20)
 
                     HStack {
-                        Text(vm.stepText)
-                            .font(.system(size: 28))
-                            .foregroundStyle(.white)
-                            .multilineTextAlignment(.leading)
-                            .animation(.easeIn(duration: 0.25), value: vm.stepText)
+                        VStack(alignment: .leading) {
+                            if vm.stage == .shiftReady {
+                                Text("The operation happens in 3 simple steps.")
+                                    .font(.system(size: 28))
+                                    .foregroundStyle(.white)
+                                    .multilineTextAlignment(.leading)
+                                    .padding(.bottom, 20)
+                            }
+
+                                Text(vm.stepText)
+                                    .font(.system(size: 28))
+                                    .foregroundStyle(.white)
+                                    .multilineTextAlignment(.leading)
+                                    .contentTransition(.opacity)
+                                    .animation(
+                                        .easeIn(duration: 0.25),
+                                        value: vm.stepText
+                                    )
+                        }
 
                         Spacer()
                     }
 
                     Spacer()
                 }
-                .frame(height: geo.size.height * 0.2)
+                .frame(maxHeight: geo.size.height * 0.3)
 
                 ConvolutionAnimationView(vm: vm)
 
-
-                HStack() {
+                HStack {
                     Button {
                         dismiss()
                     } label: {
@@ -56,6 +70,7 @@ struct ConvolutionOperationView: View {
                             .font(.system(size: 24))
                             .padding(10)
                     }
+                    .disabled(!vm.hasFinished)
                     .buttonStyle(.borderedProminent)
                 }
             }
@@ -63,7 +78,7 @@ struct ConvolutionOperationView: View {
             .padding(.horizontal, 20)
         }
         .navigationDestination(isPresented: $isPressed) {
-            ConvolutionDemoView()
+            ImageProcessingExampleView()
         }
         .navigationBarBackButtonHidden()
     }

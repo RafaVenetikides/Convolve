@@ -13,6 +13,7 @@ final class ConvolutionViewModel: ObservableObject {
     @Published var originalUIImage: UIImage?
     @Published var outputImage: Image?
 
+    @Published var useColor: Bool = true
     @Published var selectedPreset: KernelPreset = .boxBlur
 
     @Published var cursorX: Int = 0
@@ -47,17 +48,26 @@ final class ConvolutionViewModel: ObservableObject {
     private var lastRenderTime: CFTimeInterval = 0
 
     func setup(assetName: String) {
-        guard let loaded = ImageUtils.loadGrayscaleBuffer(assetName: assetName)
-        else { return }
+        if useColor {
+            guard let loaded = ImageUtils.loadARGBFFFFBuffer(assetName: assetName) else { return }
+            originalUIImage = loaded.original
+            imageWidth = loaded.width
+            imageHeight = loaded.height
 
-        originalUIImage = loaded.original
-        imageWidth = loaded.width
-        imageHeight = loaded.height
+            input = loaded.buffer
+            revealedOutput = Array(repeating: 0, count: imageWidth * imageHeight * 4)
+        } else {
+            guard let loaded = ImageUtils.loadGrayscaleBuffer(assetName: assetName)     else { return }
 
-        input = loaded.buffer
+            originalUIImage = loaded.original
+            imageWidth = loaded.width
+            imageHeight = loaded.height
+
+            input = loaded.buffer
+            revealedOutput = Array(repeating: 0, count: imageWidth * imageHeight)
+        }
+
         fullOutput.removeAll(keepingCapacity: true)
-
-        revealedOutput = Array(repeating: 0, count: imageWidth * imageHeight)
 
         cursorX = 0
         cursorY = 0
@@ -75,7 +85,9 @@ final class ConvolutionViewModel: ObservableObject {
         cursorX = 0
         cursorY = 0
         fullOutput.removeAll(keepingCapacity: true)
-        revealedOutput = Array(repeating: 0, count: imageWidth * imageHeight)
+
+        let stride = useColor ? 4 : 1
+        revealedOutput = Array(repeating: 0, count: imageWidth * imageHeight * stride)
         isComputing = false
 
         outputImage = makeOutputImage(from: revealedOutput)
@@ -93,7 +105,9 @@ final class ConvolutionViewModel: ObservableObject {
         cursorX = 0
         cursorY = 0
         fullOutput.removeAll(keepingCapacity: true)
-        revealedOutput = Array(repeating: 0, count: imageWidth * imageHeight)
+
+        let stride = useColor ? 4 : 1
+        revealedOutput = Array(repeating: 0, count: imageWidth * imageHeight * stride)
         isComputing = false
 
         outputImage = makeOutputImage(from: revealedOutput)
@@ -115,7 +129,9 @@ final class ConvolutionViewModel: ObservableObject {
         cursorY = 0
 
         fullOutput.removeAll(keepingCapacity: true)
-        revealedOutput = Array(repeating: 0, count: imageWidth * imageHeight)
+
+        let stride = useColor ? 4 : 1
+        revealedOutput = Array(repeating: 0, count: imageWidth * imageHeight * stride)
         isComputing = false
 
         outputImage = makeOutputImage(from: revealedOutput)
@@ -202,12 +218,15 @@ final class ConvolutionViewModel: ObservableObject {
 
     }
 
-    private func revealOutput(upToIndexExclusive index: Int) {
-        let maxIdx = imageWidth * imageHeight - 1
-        let clamped = min(max(index, 0), maxIdx)
+    private func revealOutput(upToIndexExclusive pixelIndex: Int) {
+        let pixelCount = imageWidth * imageHeight
+        let clampedPixel = min(max(pixelIndex, 0), pixelCount - 1)
+        let pixelsToCopy = clampedPixel + 1
 
-        let count = clamped + 1
+        let stride = useColor ? 4 : 1
+        let count = pixelsToCopy * stride
         guard count > 0 else { return }
+
         revealedOutput.replaceSubrange(0..<count, with: fullOutput[0..<count])
     }
 
@@ -216,6 +235,7 @@ final class ConvolutionViewModel: ObservableObject {
 
         isComputing = true
 
+        let useColorSnapshot = useColor
         let inputSnapshot = input
         let w = imageWidth
         let h = imageHeight
@@ -226,13 +246,25 @@ final class ConvolutionViewModel: ObservableObject {
         computeTask = Task.detached(priority: .userInitiated) { [weak self] in
             guard let self else { return }
 
-            let out = AccelerateConvolution.convolvePlanarF(
-                input: inputSnapshot,
-                width: w,
-                height: h,
-                kernel: k,
-                kernelSize: ks
-            )
+            let out: [Float]
+
+            if useColorSnapshot {
+                out = AccelerateConvolution.convolveARGBFFFF(
+                    input: inputSnapshot,
+                    width: w,
+                    height: h,
+                    kernel: k,
+                    kernelSize: ks
+                )
+            } else {
+                out = AccelerateConvolution.convolvePlanarFGrayscale(
+                    input: inputSnapshot,
+                    width: w,
+                    height: h,
+                    kernel: k,
+                    kernelSize: ks
+                )
+            }
 
             await MainActor.run {
                 self.fullOutput = out
@@ -250,20 +282,23 @@ final class ConvolutionViewModel: ObservableObject {
         let snapshot = revealedOutput
         let w = imageWidth
         let h = imageHeight
+        let useColorSnapshot = useColor
 
-        renderImageAsync(buffer: snapshot, width: w, height: h)
+        renderImageAsync(buffer: snapshot, width: w, height: h, useColor: useColorSnapshot)
     }
 
-    private func renderImageAsync(buffer: [Float], width: Int, height: Int) {
+    private func renderImageAsync(buffer: [Float], width: Int, height: Int, useColor: Bool) {
         Task.detached(priority: .userInitiated) { [weak self] in
             guard let self else { return }
-            guard
-                let cg = ImageUtils.makeGrascaleCGImage(
-                    buffer: buffer,
-                    width: width,
-                    height: height
-                )
-            else { return }
+
+            let cg: CGImage?
+            if useColor {
+                cg = ImageUtils.makeARGBFFFFCGImage(buffer: buffer, width: width, height: height)
+            } else {
+                cg = ImageUtils.makeGrascaleCGImage(buffer: buffer, width: width, height: height)
+            }
+
+            guard let cg else { return }
             let image = Image(decorative: cg, scale: 1.0)
 
             await MainActor.run {
@@ -273,13 +308,14 @@ final class ConvolutionViewModel: ObservableObject {
     }
 
     private func makeOutputImage(from buffer: [Float]) -> Image? {
-        guard
-            let cg = ImageUtils.makeGrascaleCGImage(
-                buffer: buffer,
-                width: imageWidth,
-                height: imageHeight
-            )
-        else { return nil }
+        let cg: CGImage?
+        if useColor {
+            cg = ImageUtils.makeARGBFFFFCGImage(buffer: buffer, width: imageWidth, height: imageHeight)
+        } else {
+            cg = ImageUtils.makeGrascaleCGImage(buffer: buffer, width: imageWidth, height: imageHeight)
+        }
+
+        guard let cg else { return nil }
         return Image(decorative: cg, scale: 1.0)
     }
 

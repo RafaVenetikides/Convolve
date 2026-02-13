@@ -21,6 +21,7 @@ struct MathDefinitionView: View {
                     Text("Definition")
                         .font(.system(size: 68))
                         .foregroundStyle(.cyan)
+                        .padding(.bottom, 20)
 
                     Text(
                         "Formally, the **convolution** of two functions is represented by the following integral:"
@@ -45,8 +46,7 @@ struct MathDefinitionView: View {
                     .multilineTextAlignment(.leading)
                     .font(.system(size: 28))
 
-                    
-                    HStack() {
+                    HStack {
                         Button {
                             dismiss()
                         } label: {
@@ -55,9 +55,9 @@ struct MathDefinitionView: View {
                                 .padding(10)
                         }
                         .buttonStyle(.bordered)
-                        
+
                         Spacer()
-                        
+
                         Button {
                             isPressed = true
                         } label: {
@@ -67,11 +67,10 @@ struct MathDefinitionView: View {
                         }
                         .buttonStyle(.borderedProminent)
 
+                    }
                 }
                 .padding(.vertical, 40)
                 .padding(.horizontal, 20)
-
-                }
             }
             .navigationDestination(isPresented: $isPressed) {
                 ConvolutionOperationView()

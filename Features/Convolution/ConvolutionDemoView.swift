@@ -52,7 +52,7 @@ struct ConvolutionDemoView: View{
                 .foregroundStyle(.secondary)
         }
         .padding()
-        .task { vm.setup(assetName: "cat") }
+        .task { vm.setup(assetName: "moon") }
         .navigationBarBackButtonHidden()
     }
 

@@ -9,21 +9,29 @@ import SwiftUI
 
 @MainActor
 final class ConvolutionAnimationViewModel: ObservableObject {
-    var stepText: String {
+    var stepText: AttributedString {
+        let raw: String
+
         switch stage {
         case .original:
-            return "We will take a look at a much simpler version of convolution called discrete convolution. For this, I want you to image a pair of lists of numbers, in which we will be applying the convolution."
+            raw =
+                "We will take a look at a much simpler version of convolution called discrete convolution. For this, I want you to imagine a pair of lists of numbers, in which we will be applying the convolution."
         case .shiftReady:
             if shift == -1 {
-                return "The operations happens in 3 simple steps.\n\n1. First we flip the second list of numbers"
-            }
-            else if shift == 0 {
-                return "2. We multiply the first and last operators from the lists, and add all the results"
+                raw = "1\\. First we **flip** the second list of numbers"
+            } else if shift == 0 {
+                raw =
+                    "2\\. We **multiply** the first and last operators from the lists, and **add** all the results"
             } else {
-                return "3. Then we shift the lists and repeat the process until it's over"
+                raw =
+                    "3\\. Then we **shift** the lists and repeat the second step until it's over"
             }
         }
+
+        return (try? AttributedString(markdown: raw)) ?? AttributedString(raw)
     }
+
+    var hasFinished = false
 
     enum Stage {
         case original
@@ -110,6 +118,9 @@ final class ConvolutionAnimationViewModel: ObservableObject {
                 withAnimation(.none) {
                     self.bIsReversed = true
                     self.bRotationDeg = 0
+                }
+
+                withAnimation(.easeInOut(duration: 0.45)) {
                     self.stage = .shiftReady
                 }
             }
@@ -121,6 +132,10 @@ final class ConvolutionAnimationViewModel: ObservableObject {
             shift = newShift
             highlightedPairs =
                 (newShift >= 0) ? alignedPairs(shift: shift) : []
+        }
+
+        if stage == .shiftReady && shift >= convResult.count - 1 {
+            hasFinished = true
         }
     }
 

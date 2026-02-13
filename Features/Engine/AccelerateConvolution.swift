@@ -8,7 +8,7 @@
 import Accelerate
 
 enum AccelerateConvolution {
-    static func convolvePlanarF(input: [Float], width: Int, height: Int, kernel: [Float], kernelSize: Int) -> [Float] {
+    static func convolvePlanarFGrayscale(input: [Float], width: Int, height: Int, kernel: [Float], kernelSize: Int) -> [Float] {
         precondition(input.count == width * height)
         precondition(kernel.count == kernelSize * kernelSize)
         precondition(kernelSize % 2 == 1)
@@ -44,6 +44,54 @@ enum AccelerateConvolution {
                     UInt32(kernelSize),
                     UInt32(kernelSize),
                     0,
+                    vImage_Flags(kvImageEdgeExtend)
+                )
+
+                precondition(err == kvImageNoError)
+            }
+        }
+
+        vDSP_vclip(dst, 1, [0], [1], &dst, 1, vDSP_Length(dst.count))
+        return dst
+    }
+
+    static func convolveARGBFFFF(input: [Float], width: Int, height: Int, kernel: [Float], kernelSize: Int, bias: Float = 0) -> [Float] {
+        precondition(input.count == width * height * 4)
+        precondition(kernel.count == kernelSize * kernelSize)
+        precondition(kernelSize % 2 == 1)
+
+        var src = input
+        var dst = [Float](repeating: 0, count: width * height * 4)
+        var biasVar = bias
+
+        src.withUnsafeMutableBufferPointer { srcPtr in
+            dst.withUnsafeMutableBufferPointer { dstPtr in
+                var srcBuf = vImage_Buffer(
+                    data: srcPtr.baseAddress!,
+                    height: vImagePixelCount(height),
+                    width: vImagePixelCount(width),
+                    rowBytes: width * 4 * MemoryLayout<Float>.size
+                )
+
+                var dstBuf = vImage_Buffer(
+                    data: dstPtr.baseAddress!,
+                    height: vImagePixelCount(height),
+                    width: vImagePixelCount(width),
+                    rowBytes: width * 4 * MemoryLayout<Float>.size
+                )
+
+                var k = kernel
+
+                let err = vImageConvolve_ARGBFFFF(
+                    &srcBuf,
+                    &dstBuf,
+                    nil,
+                    0,
+                    0,
+                    &k,
+                    UInt32(kernelSize),
+                    UInt32(kernelSize),
+                    &biasVar,
                     vImage_Flags(kvImageEdgeExtend)
                 )
 

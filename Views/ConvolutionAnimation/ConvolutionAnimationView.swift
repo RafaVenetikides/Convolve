@@ -9,6 +9,7 @@ import SwiftUI
 
 struct ConvolutionAnimationView: View {
     @ObservedObject var vm: ConvolutionAnimationViewModel
+    @Namespace private var ns
 
     var body: some View {
         VStack(spacing: 18) {
@@ -83,12 +84,15 @@ struct ConvolutionAnimationView: View {
                             reversed: false,
                             counterRotateTextDeg: 0
                         )
+                        .matchedGeometryEffect(id: "a-row", in: ns)
+
                         vectorRow(
                             values: vm.b,
                             reversed: vm.bIsReversed,
                             counterRotateTextDeg: vm.bRotationDeg
                         )
                         .rotationEffect(.degrees(vm.bRotationDeg))
+                        .matchedGeometryEffect(id: "b-row", in: ns)
                     }
                 } else {
                     VStack(alignment: .center, spacing: vm.rowSpacingY) {
@@ -97,6 +101,8 @@ struct ConvolutionAnimationView: View {
                             reversed: false,
                             counterRotateTextDeg: 0
                         )
+                        .matchedGeometryEffect(id: "a-row", in: ns)
+
                         vectorRow(
                             values: vm.b,
                             reversed: vm.bIsReversed,
@@ -104,6 +110,7 @@ struct ConvolutionAnimationView: View {
                         )
                         .rotationEffect(.degrees(vm.bRotationDeg))
                         .offset(x: vm.bOffsetX())
+                        .matchedGeometryEffect(id: "b-row", in: ns)
                     }
                 }
             }

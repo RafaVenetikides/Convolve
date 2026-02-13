@@ -21,6 +21,7 @@ struct IntroductionView: View {
                         Text("Introduction")
                             .font(.system(size: 68))
                             .foregroundStyle(.cyan)
+                            .padding(.bottom, 20)
 
                         Text(
                             "Have you ever wondered how photo-editing software apply many visual effects to images, or how AI can make sense of what’s in a picture?"
@@ -31,7 +32,7 @@ struct IntroductionView: View {
 
                         Spacer()
 
-                        Grid {
+                        Grid(horizontalSpacing: 60, verticalSpacing: 60) {
                             GridRow {
                                 Image("cat")
                                     .resizable()
