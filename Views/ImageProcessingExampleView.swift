@@ -10,6 +10,9 @@ import SwiftUI
 struct ImageProcessingExampleView: View {
     @Environment(\.dismiss) private var dismiss
     @State private var isPressed = false
+    @StateObject private var vm = ConvolutionViewModel()
+
+    private let box3: [Float] = Array(repeating: 1.0 / 9.0, count: 9)
 
     var body: some View {
         GeometryReader { geo in
@@ -24,7 +27,7 @@ struct ImageProcessingExampleView: View {
                         .padding(.bottom, 20)
 
                     Text(
-                        "This is the whole process of a discrete convolution, and it has a lot of applications in areas such as image processing. Which, instead of lists, we use 2 matrices, using the rgb values of the pixels as operators."
+                        "This is the whole process of a discrete convolution, and it has a lot of applications in areas such as image processing. Instead of working with lists, we work with 2D matrices: The image itself (a grid of pixels) and a small matrix called a **kernel**"
                     )
                     .font(.system(size: 28))
                     .foregroundStyle(.white)
@@ -39,6 +42,7 @@ struct ImageProcessingExampleView: View {
                                 .interpolation(.none)
                                 .scaledToFit()
                                 .frame(maxHeight: geo.size.height * 0.2)
+                                .grayscale(1.0)
 
                             Text("*")
                                 .font(.system(size: 68))
@@ -55,17 +59,47 @@ struct ImageProcessingExampleView: View {
                             .font(.system(size: 28))
                             .foregroundStyle(.secondary)
 
-                        Image("moon_blur")
-                            .resizable()
-                            .interpolation(.none)
-                            .scaledToFit()
-                            .frame(maxHeight: geo.size.height * 0.2)
+                        Group {
+                            if let out = vm.outputImage {
+                                out
+                                    .resizable()
+                                    .interpolation(.none)
+                                    .scaledToFit()
+                                    .overlay(resultKernelOverlay)
+                            } else {
+                                RoundedRectangle(cornerRadius: 12)
+                                    .fill(.white.opacity(0.08))
+                                    .overlay(
+                                        Text("Rendering...")
+                                            .foregroundStyle(.secondary)
+                                            .font(
+                                                .system(
+                                                    size: 18,
+                                                    design: .monospaced
+                                                )
+                                            )
+                                    )
+                            }
+                        }
+                        .frame(maxHeight: geo.size.height * 0.22)
+                        .contentShape(Rectangle())
+                        .onTapGesture { vm.togglePlay() }
+
+                        HStack {
+                            Button(vm.isRunning ? "Pause" : "Play") {
+                                vm.togglePlay()
+                            }
+                            .buttonStyle(.bordered)
+
+                            Button("Reset") { vm.reset() }
+                                .buttonStyle(.bordered)
+                        }
                     }
 
                     Spacer()
 
                     Text(
-                        "In this case, imagine the black pixels from the image as 0 and the white pixels as 1, we can convolute them with this 3x3 matrix and the resulting picture is a blurred version of the original."
+                        "In this example, imagine the black pixels from the image as 0 and the white pixels as 1. As the **kernel** (the little yellow square) slides across the image, it \"looks\" at a small neighborhood, multiplies each pixel by the kernel values, adds everything up, and writes the result back to the center pixel. The resulting picture is a blurred version of the original."
                     )
                     .font(.system(size: 28))
                     .foregroundStyle(.white)
@@ -96,10 +130,17 @@ struct ImageProcessingExampleView: View {
                 .padding(.vertical, 40)
                 .padding(.horizontal, 20)
                 .navigationDestination(isPresented: $isPressed) {
-                    ConvolutionDemoView()
+                    NeuralNetworkExampleView()
                 }
                 .navigationBarBackButtonHidden()
             }
+        }
+        .task {
+            vm.useColor = false
+            vm.setup(assetName: "moon")
+            vm.setCustomKernel(size: 3, kernel: box3)
+            vm.pixelsPerTick = 25
+            vm.togglePlay()
         }
     }
 
@@ -152,6 +193,30 @@ struct ImageProcessingExampleView: View {
                         .foregroundStyle(.white)
                 }
             }
+        }
+    }
+
+    private var resultKernelOverlay: some View {
+        GeometryReader { geo in
+            let w = geo.size.width
+            let h = geo.size.height
+
+            let imgW = max(1, vm.imageWidth)
+            let imgH = max(1, vm.imageHeight)
+
+            let x = w * CGFloat(vm.cursorX) / CGFloat(imgW)
+            let y = h * CGFloat(vm.cursorY) / CGFloat(imgH)
+
+            let kernelSize = 3
+            let kw = w * CGFloat(kernelSize) / CGFloat(imgW)
+            let kh = h * CGFloat(kernelSize) / CGFloat(imgH)
+
+            RoundedRectangle(cornerRadius: 6)
+                .strokeBorder(.yellow, lineWidth: 2)
+                .frame(width: kw, height: kh)
+                .position(x: x + kw / 2, y: y + kh / 2)
+                .animation(.linear(duration: 1.0 / 30.0), value: vm.cursorX)
+                .animation(.linear(duration: 1.0 / 30.0), value: vm.cursorY)
         }
     }
 }

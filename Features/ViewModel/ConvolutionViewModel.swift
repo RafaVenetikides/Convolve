@@ -27,12 +27,17 @@ final class ConvolutionViewModel: ObservableObject {
 
     @Published var blurIntensity: BlurIntensity = .medium
 
+    @Published private var customKernel: [Float]? = nil
+    @Published private var customKernelSize: Int? = nil
+
     var currentKernelSize: Int {
-        selectedPreset.kernelSize(width: imageWidth, height: imageHeight, intensity: blurIntensity)
+        if let customKernelSize { return customKernelSize }
+        return selectedPreset.kernelSize(width: imageWidth, height: imageHeight, intensity: blurIntensity)
     }
 
     var currentKernel: [Float] {
-        selectedPreset.makeKernel(size: currentKernelSize)
+        if let customKernel { return customKernel }
+        return selectedPreset.makeKernel(size: currentKernelSize)
     }
 
     private let renderFPS: Double = 15
@@ -112,6 +117,30 @@ final class ConvolutionViewModel: ObservableObject {
 
         outputImage = makeOutputImage(from: revealedOutput)
         startComputeIfNeeded()
+    }
+
+    func setCustomKernel(size: Int, kernel: [Float]) {
+        precondition(kernel.count == size * size)
+        customKernelSize = size
+        customKernel = kernel
+
+        stop()
+        cursorX = 0
+        cursorY = 0
+        fullOutput.removeAll(keepingCapacity: true)
+
+        let stride = useColor ? 4 : 1
+        revealedOutput = Array(repeating: 0, count: imageWidth * imageHeight * stride)
+        isComputing = false
+        outputImage = makeOutputImage(from: revealedOutput)
+
+        startComputeIfNeeded()
+    }
+
+    func clearCustomKernel() {
+        customKernelSize = nil
+        customKernel = nil
+        setPreset(selectedPreset)
     }
 
     func togglePlay() {

@@ -68,6 +68,7 @@ struct MathDefinitionView: View {
                         .buttonStyle(.borderedProminent)
 
                     }
+                    .padding(.top, 20)
                 }
                 .padding(.vertical, 40)
                 .padding(.horizontal, 20)
