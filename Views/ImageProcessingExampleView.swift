@@ -137,9 +137,9 @@ struct ImageProcessingExampleView: View {
         }
         .task {
             vm.useColor = false
-            vm.setup(assetName: "moon")
-            vm.setCustomKernel(size: 3, kernel: box3)
             vm.pixelsPerTick = 25
+            vm.setCustomKernel(size: 3, kernel: box3)
+            vm.setup(assetName: "moon")
             vm.togglePlay()
         }
     }

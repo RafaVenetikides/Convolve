@@ -84,14 +84,13 @@ struct NeuralNetworkExampleView: View {
                 .padding(.vertical, 40)
                 .padding(.horizontal, 20)
                 .navigationDestination(isPresented: $isPressed) {
-                    ConvolutionDemoView()
+                    PlaygroundIntroductionView()
                 }
                 .navigationBarBackButtonHidden()
             }
         }
         .task {
             vm.setup(assetName: "seven")
-            vm.pixelsPerTick = 25
             vm.start()
         }
         .onDisappear {

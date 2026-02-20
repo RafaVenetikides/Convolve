@@ -9,6 +9,7 @@ import SwiftUI
 
 struct ConvolutionDemoView: View{
     @StateObject private var vm = ConvolutionViewModel()
+    let assetName: String
 
     var body: some View {
         VStack(spacing: 16) {
@@ -52,8 +53,10 @@ struct ConvolutionDemoView: View{
                 .foregroundStyle(.secondary)
         }
         .padding()
-        .task { vm.setup(assetName: "seven") }
-        .navigationBarBackButtonHidden()
+        .task { vm.setup(assetName: assetName) }
+        .onChange(of: vm.pixelsPerTick, { _, newValue in
+            vm.updateSpeed(newValue)
+        })
     }
 
     private var kernelOverlay: some View {
@@ -64,8 +67,8 @@ struct ConvolutionDemoView: View{
             let x = w * CGFloat(vm.cursorX) / CGFloat(max(1, vm.imageWidth))
             let y = h * CGFloat(vm.cursorY) / CGFloat(max(1, vm.imageHeight))
 
-            let kw = w * CGFloat(vm.currentKernelSize) / CGFloat(max(1, vm.imageWidth))
-            let kh = h * CGFloat(vm.currentKernelSize) / CGFloat(max(1, vm.imageHeight))
+            let kw = w * CGFloat(vm.kernelSize) / CGFloat(max(1, vm.imageWidth))
+            let kh = h * CGFloat(vm.kernelSize) / CGFloat(max(1, vm.imageHeight))
 
             Rectangle()
                 .strokeBorder(.yellow, lineWidth: 2)
