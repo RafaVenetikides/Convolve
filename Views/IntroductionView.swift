@@ -14,25 +14,26 @@ struct IntroductionView: View {
         NavigationStack {
             GeometryReader { geo in
                 ZStack {
-                    Color.black
+                    Color(.background)
                         .ignoresSafeArea()
 
                     VStack {
                         Text("Introduction")
-                            .font(.system(size: 68))
+                            .font(.customTitle)
+                            .bold()
                             .foregroundStyle(.cyan)
-                            .padding(.bottom, 20)
+                            .padding(.bottom, geo.size.height * 0.015)
 
                         Text(
                             "Have you ever wondered how photo-editing software apply many visual effects to images, or how AI can make sense of what’s in a picture?"
                         )
                         .foregroundStyle(.white)
                         .multilineTextAlignment(.leading)
-                        .font(.system(size: 28))
+                        .font(.customBody)
 
                         Spacer()
 
-                        Grid(horizontalSpacing: 60, verticalSpacing: 60) {
+                        Grid(horizontalSpacing: geo.size.width * 0.05, verticalSpacing: geo.size.width * 0.05) {
                             GridRow {
                                 Image("cat")
                                     .resizable()
@@ -57,7 +58,6 @@ struct IntroductionView: View {
                                     .scaledToFit()
                             }
                         }
-                        .frame(width: geo.size.width * 0.7)
 
                         Spacer()
 
@@ -66,7 +66,7 @@ struct IntroductionView: View {
                         )
                         .foregroundStyle(.white)
                         .multilineTextAlignment(.leading)
-                        .font(.system(size: 28))
+                        .font(.customBody)
 
                         Spacer()
 
@@ -77,7 +77,7 @@ struct IntroductionView: View {
                                 isPressed = true
                             } label: {
                                 Text("Next")
-                                    .font(.system(size: 24))
+                                    .font(.customBody)
                                     .padding(10)
                             }
                             .buttonStyle(.borderedProminent)

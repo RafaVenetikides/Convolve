@@ -16,48 +16,59 @@ struct NeuralNetworkExampleView: View {
     var body: some View {
         GeometryReader { geo in
             ZStack {
-                Color.black
+                Color(.background)
                     .ignoresSafeArea()
 
                 VStack {
                     Text("Aplications")
-                        .font(.system(size: 68))
+                        .font(.customTitle)
+                        .bold()
                         .foregroundStyle(.cyan)
                         .padding(.bottom, 20)
 
                     Text(
                         "Convolutions are also a big deal in Artificial Intelligence, especially in **Convolutional Neural Networks** (CNNs). This type of neural network uses convolution to extract information from all kinds of data, like images, text or even audio, to interpret it and make classifications"
                     )
-                    .font(.system(size: 28))
+                    .font(.customBody)
                     .foregroundStyle(.white)
                     .multilineTextAlignment(.leading)
 
                     Spacer()
-                    Grid(horizontalSpacing: 60, verticalSpacing: 60) {
-                        GridRow {
-                            Image("seven")
-                                .resizable()
-                                .interpolation(.none)
-                                .scaledToFit()
 
-                            outputCell(vm.outEdge, label: "Edge Detect")
-                        }
+                    VStack {
+                        Grid(horizontalSpacing: 60, verticalSpacing: 60) {
+                            GridRow {
+                                Image("seven")
+                                    .resizable()
+                                    .interpolation(.none)
+                                    .scaledToFit()
 
-                        GridRow {
-                            outputCell(vm.outSobelX, label: "Sobel X")
-                            outputCell(vm.outSobelY, label: "Sobel Y")
+                                outputCell(vm.outEdge, label: "Edge Detect")
+                            }
+
+                            GridRow {
+                                outputCell(vm.outSobelX, label: "Sobel X")
+                                outputCell(vm.outSobelY, label: "Sobel Y")
+                            }
                         }
+                        .frame(width: geo.size.width * 0.55)
+                        .padding(.bottom, 40)
+
+                        Text(
+                            "With each new convolution layer, the network learns to spot patterns, first simple ones like edges, then more complex shapes, until it can recognize things like a handwritten digit. The images above show examples of these extracted patterns."
+                        )
+                        .font(.customBodySmall)
+                        .foregroundStyle(.white)
+                        .multilineTextAlignment(.leading)
                     }
-                    .frame(width: geo.size.width * 0.7)
+                    .padding(30)
+                    .background{
+                        RoundedRectangle(cornerRadius: 8)
+                            .stroke(.white)
+                    }
+                    .padding(.horizontal, 60)
 
                     Spacer()
-
-                    Text(
-                        "With each new convolution layer, the network learns to spot patterns, first simple ones like edges, then more complex shapes, until it can recognize things like a handwritten digit. The images above show examples of these extracted patterns."
-                    )
-                    .font(.system(size: 28))
-                    .foregroundStyle(.white)
-                    .multilineTextAlignment(.leading)
 
                     HStack {
                         Button {
@@ -118,6 +129,7 @@ struct NeuralNetworkExampleView: View {
                 .font(.system(size: 16, weight: .semibold, design: .monospaced))
                 .foregroundStyle(.secondary)
                 .padding(8)
+                .offset(y: 10)
         }
     }
 

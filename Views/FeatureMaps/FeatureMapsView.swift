@@ -5,6 +5,9 @@
 //  Created by Rafael Venetikides on 19/02/26.
 //
 
+
+/// This view was used to further explain the usage of the convolution in CNNs, but it was scrapped, as it tangenciates the app's main subject.
+
 import SwiftUI
 
 struct FeatureMapsView: View {

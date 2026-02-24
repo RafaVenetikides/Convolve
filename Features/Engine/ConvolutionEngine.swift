@@ -16,6 +16,7 @@ final class ConvolutionEngine: ObservableObject {
     @Published var cursorX: Int = 0
     @Published var cursorY: Int = 0
     @Published var isRunning: Bool = false
+    @Published private(set) var isFinished = false
 
     @Published private(set) var imageWidth: Int = 1
     @Published private(set) var imageHeight: Int = 1
@@ -101,6 +102,8 @@ final class ConvolutionEngine: ObservableObject {
             ),
             count: kernels.count
         )
+
+        isFinished = false
     }
 
     func start() {
@@ -109,6 +112,7 @@ final class ConvolutionEngine: ObservableObject {
         else { return }
 
         isRunning = true
+        isFinished = false
         startComputeIfNeeded()
         startTimer()
     }
@@ -149,6 +153,7 @@ final class ConvolutionEngine: ObservableObject {
         )
 
         isComputing = false
+        isFinished = false
         lastRenderTime = 0
     }
 
@@ -190,6 +195,7 @@ final class ConvolutionEngine: ObservableObject {
             timer?.invalidate()
             timer = nil
             isRunning = false
+            isFinished = true
         }
     }
 

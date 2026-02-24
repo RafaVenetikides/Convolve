@@ -1,5 +1,5 @@
 //
-//  ConvolutionDemoView.swift
+//  ConvolutionView.swift
 //  WWDC26
 //
 //  Created by Rafael Venetikides on 04/02/26.
@@ -7,56 +7,61 @@
 
 import SwiftUI
 
-struct ConvolutionDemoView: View{
+struct ConvolutionView: View{
     @StateObject private var vm = ConvolutionViewModel()
     let assetName: String
 
     var body: some View {
-        VStack(spacing: 16) {
-            HStack(spacing: 12) {
-                VStack( alignment: .leading, spacing: 8) {
-                    Text("Original")
-                        .font(.headline)
+        ZStack {
+            Color(.background)
+                .ignoresSafeArea()
+            
+            VStack(spacing: 16) {
+                HStack(spacing: 12) {
+                    VStack( alignment: .leading, spacing: 8) {
+                        Text("Original")
+                            .font(.headline)
 
-                    if let img = vm.originalUIImage {
-                        Image(uiImage: img)
-                            .resizable()
-                            .interpolation(.none)
-                            .scaledToFit()
-                            .overlay(kernelOverlay)
-                            .clipped()
-                    } else {
-                        Text("Asset not found")
+                        if let img = vm.originalUIImage {
+                            Image(uiImage: img)
+                                .resizable()
+                                .interpolation(.none)
+                                .scaledToFit()
+                                .overlay(kernelOverlay)
+                                .clipped()
+                        } else {
+                            Text("Asset not found")
+                        }
+                    }
+
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text("Exit (convolution)")
+                            .font(.headline)
+
+                        if let out = vm.outputImage {
+                            out
+                                .resizable()
+                                .interpolation(.none)
+                                .scaledToFit()
+                                .overlay(kernelOverlay)
+                                .clipped()
+                        }
                     }
                 }
 
-                VStack(alignment: .leading, spacing: 8) {
-                    Text("Exit (convolution)")
-                        .font(.headline)
+                controls
+                    .tint(.blue)
 
-                    if let out = vm.outputImage {
-                        out
-                            .resizable()
-                            .interpolation(.none)
-                            .scaledToFit()
-                            .overlay(kernelOverlay)
-                            .clipped()
-                    }
-                }
+                Text("Cursor: (\(vm.cursorX), \(vm.cursorY))")
+                    .font(.footnote)
+                    .foregroundStyle(.secondary)
             }
-
-            controls
-                .tint(.blue)
-
-            Text("Cursor: (\(vm.cursorX), \(vm.cursorY))")
-                .font(.footnote)
-                .foregroundStyle(.secondary)
+            .padding()
+            .task { vm.setup(assetName: assetName) }
+            .onChange(of: vm.pixelsPerTick, { _, newValue in
+                vm.updateSpeed(newValue)
+            })
         }
-        .padding()
-        .task { vm.setup(assetName: assetName) }
-        .onChange(of: vm.pixelsPerTick, { _, newValue in
-            vm.updateSpeed(newValue)
-        })
     }
 
     private var kernelOverlay: some View {

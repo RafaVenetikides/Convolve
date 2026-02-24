@@ -1,5 +1,5 @@
 //
-//  ConvolutionAssetPickerView.swift
+//  PlaygroundCollectionView.swift
 //  WWDC26
 //
 //  Created by Rafael Venetikides on 19/02/26.
@@ -7,27 +7,31 @@
 
 import SwiftUI
 
-struct ConvolutionAssetPickerView: View {
+struct PlaygroundCollectionView: View {
     @Environment(\.dismiss) private var dismiss
 
     private let assets: [DemoAsset] = [
         .init(assetName: "seven", title: "Hand drawn seven"),
         .init(assetName: "cat", title: "Black cat"),
         .init(assetName: "moon", title: "Moon"),
+        .init(assetName: "flower", title: "Flower")
     ]
 
     private let columns = [
-        GridItem(.adaptive(minimum: 160), spacing: 16)
+        GridItem(.adaptive(minimum: 270), spacing: 50)
     ]
 
     var body: some View {
         ZStack {
-            Color.black.ignoresSafeArea()
+            Color(.background)
+                .ignoresSafeArea()
 
             VStack {
                 Text("Choose an image")
-                    .font(.system(size: 52, weight: .bold))
+                    .font(.system(size: 68))
+                    .bold()
                     .foregroundStyle(.cyan)
+                    .padding(.bottom, 20)
 
                 Text("Pick an example to apply kernels and watch the scan in convolution in real time.")
                     .font(.system(size: 24))
@@ -35,10 +39,10 @@ struct ConvolutionAssetPickerView: View {
 
 
                 ScrollView {
-                    LazyVGrid(columns: columns, spacing: 16) {
+                    LazyVGrid(columns: columns, spacing: 50) {
                         ForEach(assets) { item in
                             NavigationLink {
-                                ConvolutionDemoView(assetName: item.assetName)
+                                ConvolutionView(assetName: item.assetName)
                             } label: {
                                 AssetCard(item: item)
                             }
@@ -46,6 +50,7 @@ struct ConvolutionAssetPickerView: View {
                         }
                     }
                     .padding(.top, 8)
+                    .padding(.horizontal, 60)
                 }
             }
             .padding(.vertical, 28)
@@ -63,19 +68,10 @@ struct AssetCard: View {
                 .resizable()
                 .interpolation(.none)
                 .scaledToFit()
-                .frame(maxWidth: .infinity)
                 .padding(12)
-                .background(
-                    RoundedRectangle(cornerRadius: 18)
-                        .fill(.white.opacity(0.06))
-                )
-                .overlay(
-                    RoundedRectangle(cornerRadius: 18)
-                        .stroke(.white.opacity(0.10), lineWidth: 1)
-                )
 
             Text(item.title)
-                .font(.system(size: 18, weight: .semibold, design: .rounded))
+                .font(.system(size: 28, weight: .semibold))
                 .foregroundStyle(.white)
         }
         .padding(12)
@@ -91,5 +87,7 @@ struct AssetCard: View {
 }
 
 #Preview {
-    ConvolutionAssetPickerView()
+    NavigationStack {
+        PlaygroundCollectionView()
+    }
 }

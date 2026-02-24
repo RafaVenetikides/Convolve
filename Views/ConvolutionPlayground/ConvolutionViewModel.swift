@@ -15,6 +15,7 @@ final class ConvolutionViewModel: ObservableObject {
     @Published var cursorX: Int = 0
     @Published var cursorY: Int = 0
     @Published var isRunning: Bool = false
+    @Published var isFinished = false
 
     @Published private(set) var imageWidth: Int = 1
     @Published private(set) var imageHeight: Int = 1
@@ -39,6 +40,7 @@ final class ConvolutionViewModel: ObservableObject {
         engine.$cursorX.assign(to: &$cursorX)
         engine.$cursorY.assign(to: &$cursorY)
         engine.$isRunning.assign(to: &$isRunning)
+        engine.$isFinished.assign(to: &$isFinished)
         engine.$imageWidth.assign(to: &$imageWidth)
         engine.$imageHeight.assign(to: &$imageHeight)
 
@@ -101,6 +103,15 @@ final class ConvolutionViewModel: ObservableObject {
 
     func reset() {
         engine.reset()
+    }
+
+    func primaryAction() {
+        if isFinished {
+            reset()
+            start()
+            return
+        }
+        togglePlay()
     }
 
     func setPreset(_ preset: KernelPreset) {

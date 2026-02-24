@@ -14,12 +14,13 @@ struct MathDefinitionView: View {
     var body: some View {
         GeometryReader { geo in
             ZStack {
-                Color.black
+                Color(.background)
                     .ignoresSafeArea()
 
                 VStack {
                     Text("Definition")
-                        .font(.system(size: 68))
+                        .font(.customTitle)
+                        .bold()
                         .foregroundStyle(.cyan)
                         .padding(.bottom, 20)
 
@@ -28,23 +29,32 @@ struct MathDefinitionView: View {
                     )
                     .foregroundStyle(.white)
                     .multilineTextAlignment(.leading)
-                    .font(.system(size: 28))
+                    .font(.customBody)
 
                     Spacer()
 
-                    Image("Integral")
-                        .resizable()
-                        .scaledToFit()
-                        .frame(width: geo.size.width * 0.6)
+                    VStack {
+                        Image("Integral")
+                            .resizable()
+                            .scaledToFit()
+                            .frame(width: geo.size.width * 0.6)
+
+                        Text(
+                            "It might look intimidating at first glance, but I promise if you stick here, we will find out that it's actually a pretty simple operation."
+                        )
+                        .foregroundStyle(.white)
+                        .multilineTextAlignment(.leading)
+                        .font(.customBodySmall)
+                        .frame(width: geo.size.width * 0.7)
+
+                    }
+                    .padding(20)
+                    .background {
+                        RoundedRectangle(cornerRadius: 8)
+                            .stroke(.white)
+                    }
 
                     Spacer()
-
-                    Text(
-                        "It might look intimidating at first glance, but I promise if you stick here, we will find out that it's actually a pretty simple operation."
-                    )
-                    .foregroundStyle(.white)
-                    .multilineTextAlignment(.leading)
-                    .font(.system(size: 28))
 
                     HStack {
                         Button {

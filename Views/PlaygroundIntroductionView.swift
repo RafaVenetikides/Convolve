@@ -14,28 +14,32 @@ struct PlaygroundIntroductionView: View {
     var body: some View {
         GeometryReader { geo in
             ZStack {
-                Color.black
+                Color(.background)
                     .ignoresSafeArea()
 
                 VStack {
                     Text("Experiment time")
                         .font(.system(size: 68))
+                        .bold()
                         .foregroundStyle(.cyan)
                         .padding(.bottom, 20)
 
-                    Text(
-                        "That was just a small introduction to the vast field of the convolutions, there is a lot more areas that utilize this operation, like probability/statistics, signal processing, physics, and so on"
-                    )
-                    .font(.system(size: 28))
-                    .foregroundStyle(.white)
-                    .multilineTextAlignment(.leading)
+                    VStack(alignment: .leading) {
+                        Text(
+                            "That was just a small introduction to the vast field of the convolutions, there is a lot more areas that utilize this operation, like probability/statistics, signal processing, physics, and so on."
+                        )
+                        .font(.system(size: 28))
+                        .foregroundStyle(.white)
+                        .multilineTextAlignment(.leading)
+                        .padding(.bottom, geo.size.height * 0.03)
 
-                    Text(
-                        "Now you will enter a playground where you can play around with convolution in diferent images and se their diferent results using diferent kernels. Feel free to explore and play as you like."
-                    )
-                    .font(.system(size: 28))
-                    .foregroundStyle(.white)
-                    .multilineTextAlignment(.leading)
+                        Text(
+                            "Now you will enter a playground where you can play around with convolution in diferent images and se their diferent results using diferent kernels. Feel free to explore and play as you like."
+                        )
+                        .font(.system(size: 28))
+                        .foregroundStyle(.white)
+                        .multilineTextAlignment(.leading)
+                    }
 
                     Spacer()
 
@@ -64,12 +68,14 @@ struct PlaygroundIntroductionView: View {
                                 .padding()
                         }
                         .buttonStyle(.bordered)
+
+                        Spacer()
                     }
                 }
                 .padding(.vertical, 40)
                 .padding(.horizontal, 20)
                 .navigationDestination(isPresented: $isPressed) {
-                    ConvolutionAssetPickerView()
+                    PlaygroundCollectionView()
                 }
                 .navigationBarBackButtonHidden()
             }

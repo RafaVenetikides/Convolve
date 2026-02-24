@@ -10,18 +10,47 @@ import SwiftUI
 struct ConvolutionAnimationView: View {
     @ObservedObject var vm: ConvolutionAnimationViewModel
     @Namespace private var ns
+    private let isIpad: Bool = UIDevice.current.userInterfaceIdiom == .pad
 
     var body: some View {
-        VStack(spacing: 18) {
-            header
+        HStack(spacing: 16) {
 
-            blocksSection
+            Button {
+                vm.step(-1)
+            } label: {
+                Image(systemName: "backward.end.fill")
+                    .font(.customBody)
+                    .padding(10)
+            }
+            .clipShape(.circle)
+            .buttonStyle(.borderedProminent)
+            .disabled(vm.stage == .original)
 
-            marchingSection
+            VStack {
+                header
 
-            Spacer()
+                blocksSection
+                    .frame(minHeight: 150, alignment: .top)
 
-            controls
+                marchingSection
+                    .frame(minHeight: 70, alignment: .top)
+            }
+            .frame(minWidth: 400)
+
+            Button {
+                vm.step(+1)
+            } label: {
+                Image(systemName: "forward.end.fill")
+                    .font(.customBody)
+                    .padding(10)
+
+            }
+            .clipShape(.circle)
+            .buttonStyle(.borderedProminent)
+            .disabled(
+                vm.stage == .shiftReady
+                    && vm.shift >= vm.convResult.count - 1
+            )
         }
         .padding()
     }
@@ -30,7 +59,7 @@ struct ConvolutionAnimationView: View {
         VStack(spacing: 8) {
             HStack(spacing: 8) {
                 Text("(3, 4, 5) * (8, 9, 10)")
-                    .font(.title3)
+                    .font(.customBody)
                     .monospaced()
             }
 
@@ -45,6 +74,7 @@ struct ConvolutionAnimationView: View {
     private var resultTupleView: some View {
         HStack(spacing: 0) {
             Text("(")
+                .font(.customBody)
 
             ForEach(vm.convResult.indices, id: \.self) { i in
                 Group {
@@ -58,18 +88,22 @@ struct ConvolutionAnimationView: View {
                             )
                     } else {
                         Text(" _ ")
+                            .font(.customBody)
                             .opacity(0.5)
                     }
                 }
+                .font(.customBody)
                 .foregroundStyle(.yellow)
                 .monospaced()
 
                 if i != vm.convResult.count - 1 {
                     Text(", ")
+                        .font(.customBody)
                 }
             }
 
             Text(")")
+                .font(.customBody)
         }
         .animation(.easeIn(duration: 0.25), value: vm.shift)
     }
@@ -77,7 +111,7 @@ struct ConvolutionAnimationView: View {
     private var blocksSection: some View {
         VStack(spacing: 12) {
             Group {
-                if vm.stage == .original {
+                if vm.stage == .original || vm.stage == .startAnimation {
                     HStack(alignment: .top, spacing: 40) {
                         vectorRow(
                             values: vm.a,
@@ -153,17 +187,18 @@ struct ConvolutionAnimationView: View {
             ZStack {
                 RoundedRectangle(cornerRadius: 8)
                     .strokeBorder(
-                        highlighted ? Color.yellow : Color.gray.opacity(0.6),
+                        highlighted
+                            ? Color.yellow : Color.gray.opacity(0.6),
                         lineWidth: highlighted ? 3 : 2
                     )
                     .background(
                         RoundedRectangle(cornerRadius: 8)
                             .fill(Color.gray.opacity(0.25))
                     )
-                    .frame(width: 54, height: 54)
+                    .frame(width: isIpad ? 54 : 40, height: isIpad ? 54 : 40)
 
                 Text("\(value)")
-                    .font(.title3)
+                    .font(.customBodySmall)
                     .fontWeight(.semibold)
                     .rotationEffect(.degrees(-counterRotateTextDeg))
             }

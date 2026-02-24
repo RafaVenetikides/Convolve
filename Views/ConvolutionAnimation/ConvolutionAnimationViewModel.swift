@@ -9,33 +9,17 @@ import SwiftUI
 
 @MainActor
 final class ConvolutionAnimationViewModel: ObservableObject {
-    var stepText: AttributedString {
-        let raw: String
-
-        switch stage {
-        case .original:
-            raw =
-                "We will take a look at a much simpler version of convolution called discrete convolution. For this, I want you to imagine a pair of lists of numbers, in which we will be applying the convolution."
-        case .shiftReady:
-            if shift == -1 {
-                raw = "1\\. First we **flip** the second list of numbers"
-            } else if shift == 0 {
-                raw =
-                    "2\\. We **multiply** the first and last operators from the lists, and **add** all the results"
-            } else {
-                raw =
-                    "3\\. Then we **shift** the lists and repeat the second step until it's over"
-            }
-        }
-
-        return (try? AttributedString(markdown: raw)) ?? AttributedString(raw)
-    }
-
-    var hasFinished = false
-
     enum Stage {
         case original
+        case startAnimation
         case shiftReady
+    }
+
+    enum InstructionStep: Equatable {
+        case intro
+        case flip
+        case multiply
+        case shift
     }
 
     let a: [Int]
@@ -43,45 +27,53 @@ final class ConvolutionAnimationViewModel: ObservableObject {
 
     var convResult: [Int] { a.convolve(with: b) }
 
-    @Published var shift: Int = -1
-    @Published var highlightedPairs: [(Int, Int)] = []
+    @Published private(set) var shift: Int = -1
+    var highlightedPairs: [(Int, Int)] {
+        shift >= 0 ? alignedPairs(shift: shift) : []
+    }
 
-    @Published var stage: Stage = .original
+    @Published private(set) var stage: Stage = .original
+    @Published private(set) var instructionStep: InstructionStep = .intro
     @Published var bIsReversed: Bool = false
     @Published var bRotationDeg: Double = 0
 
-    let cellPitch: CGFloat = 54
+    let cellPitch: CGFloat
     let rowSpacingY: CGFloat = 18
+
+    @Published private(set) var isAnimating = false
+    @Published private(set) var hasFinished = false
 
     init(a: [Int] = [3, 4, 5], b: [Int] = [8, 9, 10]) {
         self.a = a
         self.b = b
+
+        self.cellPitch = UIDevice.current.userInterfaceIdiom == .pad ? 54 : 40
     }
 
     func bOffsetX() -> CGFloat {
         guard shift >= 0 else { return 0 }
-        let m = b.count
-        let deltaCells = shift - (m - 1)
+        let sizeListB = b.count
+        let deltaCells = shift - (sizeListB - 1)
         return CGFloat(deltaCells) * cellPitch
     }
 
     func expressionForCurrentShift() -> String {
         let pairs = alignedPairs(shift: shift)
-        return pairs.map { (iA, iBrev) in
-            let vA = a[iA]
-            let vB = b.reversed()[iBrev]
-            return "\(vA)·\(vB)"
+        return pairs.map { (indexListA, indexListB) in
+            let valueA = a[indexListA]
+            let valueB = b.reversed()[indexListB]
+            return "\(valueA)·\(valueB)"
         }.joined(separator: " + ")
     }
 
     private func alignedPairs(shift: Int) -> [(Int, Int)] {
-        let n = a.count
-        let m = b.count
+        let sizeListA = a.count
+        let sizeListB = b.count
         var out: [(Int, Int)] = []
-        for iA in 0..<n {
-            for iBrev in 0..<m {
-                if (iA - iBrev) == (shift - (m - 1)) {
-                    out.append((iA, iBrev))
+        for indexListA in 0..<sizeListA {
+            for indexListB in 0..<sizeListB {
+                if (indexListA - indexListB) == (shift - (sizeListB - 1)) {
+                    out.append((indexListA, indexListB))
                 }
             }
         }
@@ -94,13 +86,14 @@ final class ConvolutionAnimationViewModel: ObservableObject {
 
     func isHighlightedInPairsB(_ indexBOriginal: Int) -> Bool {
         let m = b.count
-        return highlightedPairs.contains { (_, iBrev) in
-            let original = (m - 1 - iBrev)
+        return highlightedPairs.contains { (_, indexListB) in
+            let original = (m - 1 - indexListB)
             return original == indexBOriginal
         }
     }
 
     func step(_ delta: Int) {
+        guard !isAnimating else { return }
         if delta > 0 {
             stepForward()
         } else if delta < 0 {
@@ -109,33 +102,61 @@ final class ConvolutionAnimationViewModel: ObservableObject {
     }
 
     private func stepForward() {
-        if stage == .original {
+        switch stage {
+        case .original:
+
+            withAnimation(.easeIn(duration: 0.25)) {
+                instructionStep = .flip
+            }
+
+            withAnimation(.easeInOut(duration: 0.45)) {
+                self.stage = .startAnimation
+            }
+
+        case .startAnimation:
+            isAnimating = true
+
             withAnimation(.easeInOut(duration: 0.6)) {
                 bRotationDeg = 180
             }
 
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) {
+            Task { @MainActor in
+                try? await Task.sleep(for: .milliseconds(600))
+
                 withAnimation(.none) {
-                    self.bIsReversed = true
-                    self.bRotationDeg = 0
+                    bIsReversed = true
+                    bRotationDeg = 0
+                }
+
+                withAnimation(.easeIn(duration: 0.25)) {
+                    instructionStep = .multiply
                 }
 
                 withAnimation(.easeInOut(duration: 0.45)) {
-                    self.stage = .shiftReady
+                    stage = .shiftReady
+                    shift = -1
                 }
+
+                isAnimating = false
             }
             return
-        }
 
-        let newShift = max(-1, min(convResult.count - 1, shift + 1))
-        withAnimation(.easeInOut(duration: 0.35)) {
-            shift = newShift
-            highlightedPairs =
-                (newShift >= 0) ? alignedPairs(shift: shift) : []
-        }
+        case .shiftReady:
 
-        if stage == .shiftReady && shift >= convResult.count - 1 {
-            hasFinished = true
+            let newShift = max(-1, min(convResult.count - 1, shift + 1))
+            withAnimation(.easeInOut(duration: 0.35)) {
+                shift = newShift
+            }
+
+            if newShift >= 0, instructionStep != .shift {
+                withAnimation(.easeIn(duration: 0.25)) {
+                    instructionStep = .shift
+                }
+            }
+
+            if shift >= convResult.count - 1 {
+                hasFinished = true
+            }
         }
     }
 
@@ -144,35 +165,58 @@ final class ConvolutionAnimationViewModel: ObservableObject {
             let newShift = max(-1, shift - 1)
             withAnimation(.easeInOut(duration: 0.35)) {
                 shift = newShift
-                highlightedPairs =
-                    (newShift >= 0) ? alignedPairs(shift: shift) : []
             }
+
+            if newShift == -1, instructionStep != .multiply {
+                withAnimation(.easeIn(duration: 0.25)) {
+                    instructionStep = .multiply
+                }
+            }
+
             return
         }
 
         if stage == .shiftReady, shift == -1 {
+            isAnimating = true
+
             withAnimation(.easeInOut(duration: 0.6)) {
                 bRotationDeg = 180
             }
 
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) {
+            Task{ @MainActor in
+                try? await Task.sleep(for: .milliseconds(600))
+
                 withAnimation(.none) {
-                    self.bIsReversed = false
-                    self.bRotationDeg = 0
-                    self.stage = .original
-                    self.highlightedPairs = []
+                    bIsReversed = false
+                    bRotationDeg = 0
+                    stage = .startAnimation
                 }
+
+                withAnimation(.easeIn(duration: 0.25)) {
+                    instructionStep = .flip
+                }
+
+                isAnimating = false
+            }
+        }
+
+        if stage == .startAnimation {
+            withAnimation(.easeInOut(duration: 0.3)) {
+                stage = .original
+                instructionStep = .intro
             }
         }
     }
 
     func resetAll() {
+        isAnimating = false
+
         withAnimation(.easeInOut(duration: 0.3)) {
             stage = .original
             shift = -1
-            highlightedPairs = []
             bIsReversed = false
             bRotationDeg = 0
+            instructionStep = .intro
         }
     }
 }

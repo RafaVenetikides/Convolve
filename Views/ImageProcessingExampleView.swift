@@ -17,14 +17,15 @@ struct ImageProcessingExampleView: View {
     var body: some View {
         GeometryReader { geo in
             ZStack {
-                Color.black
+                Color(.background)
                     .ignoresSafeArea()
 
                 VStack {
                     Text("Aplications")
                         .font(.system(size: 68))
+                        .bold()
                         .foregroundStyle(.cyan)
-                        .padding(.bottom, 20)
+                        .padding(.bottom, geo.size.height * 0.01)
 
                     Text(
                         "This is the whole process of a discrete convolution, and it has a lot of applications in areas such as image processing. Instead of working with lists, we work with 2D matrices: The image itself (a grid of pixels) and a small matrix called a **kernel**"
@@ -36,74 +37,85 @@ struct ImageProcessingExampleView: View {
                     Spacer()
 
                     VStack {
-                        HStack {
-                            Image("moon")
-                                .resizable()
-                                .interpolation(.none)
-                                .scaledToFit()
-                                .frame(maxHeight: geo.size.height * 0.2)
-                                .grayscale(1.0)
 
-                            Text("*")
-                                .font(.system(size: 68))
-                                .foregroundStyle(.white)
-
-                            VStack(spacing: 0) {
-                                vectorRow()
-                                vectorRow()
-                                vectorRow()
-                            }
-                        }
-
-                        Text("Result:")
-                            .font(.system(size: 28))
-                            .foregroundStyle(.secondary)
-
-                        Group {
-                            if let out = vm.outputImage {
-                                out
+                        VStack {
+                            HStack {
+                                Image("moon")
                                     .resizable()
                                     .interpolation(.none)
                                     .scaledToFit()
-                                    .overlay(resultKernelOverlay)
-                            } else {
-                                RoundedRectangle(cornerRadius: 12)
-                                    .fill(.white.opacity(0.08))
-                                    .overlay(
-                                        Text("Rendering...")
-                                            .foregroundStyle(.secondary)
-                                            .font(
-                                                .system(
-                                                    size: 18,
-                                                    design: .monospaced
+                                    .frame(maxHeight: geo.size.height * 0.15)
+                                    .grayscale(1.0)
+
+                                Text("*")
+                                    .font(.system(size: 68))
+                                    .foregroundStyle(.white)
+
+                                VStack(spacing: 0) {
+                                    vectorRow()
+                                    vectorRow()
+                                    vectorRow()
+                                }
+                            }
+
+                            Text("Result:")
+                                .font(.system(size: 20))
+                                .foregroundStyle(.secondary)
+
+                            Group {
+                                if let out = vm.outputImage {
+                                    out
+                                        .resizable()
+                                        .interpolation(.none)
+                                        .scaledToFit()
+                                        .overlay(resultKernelOverlay)
+                                } else {
+                                    RoundedRectangle(cornerRadius: 12)
+                                        .fill(.white.opacity(0.08))
+                                        .overlay(
+                                            Text("Rendering...")
+                                                .foregroundStyle(.secondary)
+                                                .font(
+                                                    .system(
+                                                        size: 18,
+                                                        design: .monospaced
+                                                    )
                                                 )
-                                            )
-                                    )
+                                        )
+                                }
                             }
-                        }
-                        .frame(maxHeight: geo.size.height * 0.22)
-                        .contentShape(Rectangle())
-                        .onTapGesture { vm.togglePlay() }
+                            .frame(maxHeight: geo.size.height * 0.15)
+                            .contentShape(Rectangle())
 
-                        HStack {
-                            Button(vm.isRunning ? "Pause" : "Play") {
-                                vm.togglePlay()
-                            }
-                            .buttonStyle(.bordered)
-
-                            Button("Reset") { vm.reset() }
-                                .buttonStyle(.bordered)
+                            HStack {
+                                Button {
+                                    vm.primaryAction()
+                                } label: {
+                                    Image(systemName: vm.isRunning ? "pause.fill" : "play.fill")
+                                        .font(.customBody)
+                                        .padding(10)
+                                }
+                                .clipShape(.circle)
+                                .buttonStyle(.borderedProminent)
+                           }
                         }
+                        .padding(.bottom, 60)
+
+                        Text(
+                            "In this example, imagine the black pixels from the image as 0 and the white pixels as 1. As the **kernel** (the little yellow square) slides across the image, it \"looks\" at a small neighborhood, multiplies each pixel by the kernel values, adds everything up, and writes the result back to the center pixel. The resulting picture is a blurred version of the original."
+                        )
+                        .font(.system(size: 20))
+                        .foregroundStyle(.white)
+                        .multilineTextAlignment(.leading)
                     }
+                    .padding(30)
+                    .background{
+                        RoundedRectangle(cornerRadius: 8)
+                            .stroke(.white)
+                    }
+                    .padding(.horizontal, 60)
 
                     Spacer()
-
-                    Text(
-                        "In this example, imagine the black pixels from the image as 0 and the white pixels as 1. As the **kernel** (the little yellow square) slides across the image, it \"looks\" at a small neighborhood, multiplies each pixel by the kernel values, adds everything up, and writes the result back to the center pixel. The resulting picture is a blurred version of the original."
-                    )
-                    .font(.system(size: 28))
-                    .foregroundStyle(.white)
-                    .multilineTextAlignment(.leading)
 
                     HStack {
                         Button {
@@ -140,7 +152,7 @@ struct ImageProcessingExampleView: View {
             vm.pixelsPerTick = 25
             vm.setCustomKernel(size: 3, kernel: box3)
             vm.setup(assetName: "moon")
-            vm.togglePlay()
+            vm.start()
         }
     }
 
@@ -165,13 +177,13 @@ struct ImageProcessingExampleView: View {
                         RoundedRectangle(cornerRadius: 8)
                             .fill(Color.gray.opacity(0.25))
                     )
-                    .frame(width: 60, height: 60)
+                    .frame(width: 50, height: 50)
 
                 VStack(spacing: 2) {
                     Text(numerator)
                         .font(
                             .system(
-                                size: 16,
+                                size: 13,
                                 weight: .semibold,
                                 design: .monospaced
                             )
@@ -185,7 +197,7 @@ struct ImageProcessingExampleView: View {
                     Text(denominator)
                         .font(
                             .system(
-                                size: 16,
+                                size: 13,
                                 weight: .semibold,
                                 design: .monospaced
                             )
