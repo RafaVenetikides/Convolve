@@ -20,7 +20,8 @@ struct ConvolutionView: View{
                 HStack(spacing: 12) {
                     VStack( alignment: .leading, spacing: 8) {
                         Text("Original")
-                            .font(.headline)
+                            .font(.customBodySmall)
+                            .foregroundStyle(.white)
 
                         if let img = vm.originalUIImage {
                             Image(uiImage: img)
@@ -36,7 +37,8 @@ struct ConvolutionView: View{
 
                     VStack(alignment: .leading, spacing: 8) {
                         Text("Exit (convolution)")
-                            .font(.headline)
+                            .font(.customBodySmall)
+                            .foregroundStyle(.white)
 
                         if let out = vm.outputImage {
                             out
@@ -52,9 +54,20 @@ struct ConvolutionView: View{
                 controls
                     .tint(.blue)
 
-                Text("Cursor: (\(vm.cursorX), \(vm.cursorY))")
-                    .font(.footnote)
-                    .foregroundStyle(.secondary)
+                HStack(spacing: 16) {
+                    Image(systemName: "info.circle")
+                        .font(.customBody)
+                        .foregroundStyle(.cyan)
+
+                    Text(vm.selectedPreset.description)
+                        .foregroundStyle(.white)
+                        .font(.customBodySmall)
+                }
+                .padding(20)
+                .background{
+                    RoundedRectangle(cornerRadius: 6)
+                        .stroke(.cyan)
+                }
             }
             .padding()
             .task { vm.setup(assetName: assetName) }
@@ -87,7 +100,7 @@ struct ConvolutionView: View{
     private var controls: some View {
         VStack(spacing: 12) {
             HStack(spacing: 12) {
-                Button(vm.isRunning ? "Pause" : "Play") { vm.togglePlay() }
+                Button(vm.isRunning ? "Pause" : "Play") { vm.primaryAction() }
                     .buttonStyle(.borderedProminent)
 
                 Button("Step") { vm.stepOnce() }
@@ -134,4 +147,8 @@ struct ConvolutionView: View{
             }
         }
     }
+}
+
+#Preview {
+    ConvolutionView(assetName: "moon")
 }

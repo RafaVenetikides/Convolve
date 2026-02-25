@@ -37,6 +37,7 @@ final class ConvolutionEngine: ObservableObject {
     private var computeTask: Task<Void, Never>?
     private var isComputing = false
     private var lastRenderTime: CFTimeInterval = 0
+    private var reachedEnd = false
 
     func configure(
         assetName: String,
@@ -81,6 +82,7 @@ final class ConvolutionEngine: ObservableObject {
         cursorX = 0
         cursorY = 0
         isComputing = false
+        reachedEnd = false
         lastRenderTime = 0
 
         let pixelCount = max(0, imageWidth * imageHeight)
@@ -154,6 +156,7 @@ final class ConvolutionEngine: ObservableObject {
 
         isComputing = false
         isFinished = false
+        reachedEnd = false
         lastRenderTime = 0
     }
 
@@ -179,17 +182,19 @@ final class ConvolutionEngine: ObservableObject {
     private func tick() {
         guard imageWidth > 0, imageHeight > 0 else { return }
 
+        startComputeIfNeeded()
+
         advanceCursor()
         revealIfPossible()
         scheduleRenderIfNeeded()
 
-        if cursorY >= imageHeight {
+        if reachedEnd {
             // finished scan
             if fullOutputs.isEmpty && isComputing { return }
 
             if !fullOutputs.isEmpty {
                 revealAll()
-                scheduleRenderIfNeeded()
+                scheduleRenderIfNeeded(force: true)
             }
 
             timer?.invalidate()
@@ -202,15 +207,17 @@ final class ConvolutionEngine: ObservableObject {
     private func advanceCursor() {
         let steps = max(1, Int(pixelsPerTick))
 
-        var idx = cursorY * imageWidth + cursorX
         let maxIdx = imageWidth * imageHeight
+        guard maxIdx > 0 else { return }
 
-        idx = min(idx + steps, maxIdx)
+        var idx = cursorY * imageWidth + cursorX
+        let next = idx + steps
 
-        if idx >= maxIdx {
-            cursorX = 0
-            cursorY = imageHeight
-            return
+        if next >= maxIdx {
+            reachedEnd = true
+            idx = maxIdx - 1
+        } else {
+            idx = next
         }
 
         cursorY = idx / imageWidth
@@ -274,7 +281,18 @@ final class ConvolutionEngine: ObservableObject {
             await MainActor.run {
                 self.fullOutputs = outs
                 self.isComputing = false
-                self.revealIfPossible()
+
+                if self.reachedEnd {
+                    self.revealAll()
+                    self.scheduleRenderIfNeeded(force: true)
+                    self.timer?.invalidate()
+                    self.timer = nil
+                    self.isRunning = false
+                    self.isFinished = true
+                } else {
+                    self.revealIfPossible()
+                    self.scheduleRenderIfNeeded(force: true)
+                }
             }
         }
     }
@@ -324,9 +342,11 @@ final class ConvolutionEngine: ObservableObject {
     }
 
 
-    private func scheduleRenderIfNeeded() {
+    private func scheduleRenderIfNeeded(force: Bool = false) {
         let now = CACurrentMediaTime()
-        guard now - lastRenderTime >= (1.0 / renderFPS) else { return }
+        if !force {
+            guard now - lastRenderTime >= (1.0 / renderFPS) else { return }
+        }
         lastRenderTime = now
 
         let w = imageWidth

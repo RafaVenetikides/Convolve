@@ -25,6 +25,25 @@ enum KernelPreset: String, CaseIterable, Identifiable {
         }
     }
 
+    var description: String {
+        switch self {
+        case .boxBlur:
+            return "Box Blur kernel replaces the color of the pixel with the average of the the pixels surrounding it, resulting in a blur, with smooth details and noise reduction"
+        case .gaussianBlur:
+            return "Gaussian blur alsho smooths the image, but it uses a higher weight in the central pixel. This results in a blur that looks more natural and less \"blocky\""
+        case .sharpen:
+            return "Sharpen kernel increases the contrast around edges to make details look clearer, enhancing fine textures and outlines."
+        case .edgeDetect:
+            return "Edge detection highlights where the image changes sharply, highlighting the edged of objects in the image, while flat areas look darker"
+        case .sobelX:
+            return "Sobel X detects vertical edges on the image. It highlights areas where pixels change strongly in the horizontal direction."
+        case .sobelY:
+            return "Sobel Y detects horizontal edges on the image. It measures changes from top to bottom, highlighting pixels the change strongly in the vertical direction"
+        case .laplacian:
+            return "Laplacian is an kernal that looks for changes in all directions (not just X and Y). Compared to Edge Detect, it tends to produce a thinner, more detailed outlines."
+        }
+    }
+
     func kernelSize(width: Int, height: Int, intensity: BlurIntensity) -> Int {
         switch self {
         case .boxBlur, .gaussianBlur:

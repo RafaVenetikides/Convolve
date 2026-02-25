@@ -4,6 +4,8 @@ struct ContentView: View {
     @State private var startAnimation = false
 
     var body: some View {
-        IntroductionView()
+        NavigationStack {
+            TitleView()
+        }
     }
 }

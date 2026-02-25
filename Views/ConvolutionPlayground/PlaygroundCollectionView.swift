@@ -18,7 +18,7 @@ struct PlaygroundCollectionView: View {
     ]
 
     private let columns = [
-        GridItem(.adaptive(minimum: 270), spacing: 50)
+        GridItem(.adaptive(minimum: 270), spacing: 30)
     ]
 
     var body: some View {
@@ -39,7 +39,7 @@ struct PlaygroundCollectionView: View {
 
 
                 ScrollView {
-                    LazyVGrid(columns: columns, spacing: 50) {
+                    LazyVGrid(columns: columns, spacing: 30) {
                         ForEach(assets) { item in
                             NavigationLink {
                                 ConvolutionView(assetName: item.assetName)
