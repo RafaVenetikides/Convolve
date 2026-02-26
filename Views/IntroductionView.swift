@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct IntroductionView: View {
-    @State private var isPressed = false
+    @EnvironmentObject private var router: NavRouter
 
     var body: some View {
         GeometryReader { geo in
@@ -74,7 +74,7 @@ struct IntroductionView: View {
                         Spacer()
 
                         Button {
-                            isPressed = true
+                            router.push(.mathDefinition)
                         } label: {
                             Text("Next")
                                 .font(.customBody)
@@ -85,9 +85,6 @@ struct IntroductionView: View {
                 }
                 .padding(.vertical, 40)
                 .padding(.horizontal, 20)
-            }
-            .navigationDestination(isPresented: $isPressed) {
-                MathDefinitionView()
             }
         }
         .navigationBarBackButtonHidden()

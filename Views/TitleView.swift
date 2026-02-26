@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct TitleView: View {
-    @State private var isPressed = false
+    @EnvironmentObject private var router: NavRouter
     @State private var isSpinning = false
 
     var body: some View {
@@ -31,7 +31,7 @@ struct TitleView: View {
                 Spacer()
 
                 Button{
-                    isPressed = true
+                    router.push(.intro)
                 } label: {
                     Text("COMERÇAR")
                         .foregroundStyle(.white)
@@ -44,9 +44,6 @@ struct TitleView: View {
             }
             .padding(.vertical, 40)
             .padding(.horizontal, 20)
-        }
-        .navigationDestination(isPresented: $isPressed) {
-            IntroductionView()
         }
     }
 }

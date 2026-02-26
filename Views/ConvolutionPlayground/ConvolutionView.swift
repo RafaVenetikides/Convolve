@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct ConvolutionView: View {
-    @Environment(\.dismiss) private var dismiss
+    @EnvironmentObject private var router: NavRouter
     @StateObject private var vm = ConvolutionViewModel()
     let assetName: String
 
@@ -166,7 +166,7 @@ struct ConvolutionView: View {
                         Text("\(Int(vm.pixelsPerTick)) px/step")
                             .font(.customBodySmall)
                             .foregroundStyle(.white)
-                            .frame(width: 120, alignment: .trailing)
+                            .frame(width: 140, alignment: .trailing)
                     }
                 }
 
@@ -189,7 +189,7 @@ struct ConvolutionView: View {
 
                 HStack {
                     Button {
-                            dismiss()
+                        router.pop()
                         } label: {
                             Text("Back")
                                 .font(.system(size: 24))
@@ -236,4 +236,5 @@ struct ConvolutionView: View {
 
 #Preview {
     ConvolutionView(assetName: "moon")
+        .environmentObject(NavRouter())
 }

@@ -8,8 +8,7 @@
 import SwiftUI
 
 struct PlaygroundIntroductionView: View {
-    @Environment(\.dismiss) private var dismiss
-    @State private var isPressed: Bool = false
+    @EnvironmentObject private var router: NavRouter
 
     var body: some View {
         GeometryReader { geo in
@@ -44,7 +43,7 @@ struct PlaygroundIntroductionView: View {
                     Spacer()
 
                     Button {
-                        isPressed = true
+                        router.push(.playgroundMenu)
                     } label: {
                         Image(systemName: "play.fill")
                             .font(.system(size: 24))
@@ -61,7 +60,7 @@ struct PlaygroundIntroductionView: View {
 
                     HStack {
                         Button {
-                            dismiss()
+                            router.pop()
                         } label: {
                             Text("Back")
                                 .font(.system(size: 24))
@@ -74,9 +73,6 @@ struct PlaygroundIntroductionView: View {
                 }
                 .padding(.vertical, 40)
                 .padding(.horizontal, 20)
-                .navigationDestination(isPresented: $isPressed) {
-                    PlaygroundCollectionView()
-                }
                 .navigationBarBackButtonHidden()
             }
         }

@@ -8,8 +8,7 @@
 import SwiftUI
 
 struct MathDefinitionView: View {
-    @Environment(\.dismiss) private var dismiss
-    @State private var isPressed = false
+    @EnvironmentObject private var router: NavRouter
 
     var body: some View {
         GeometryReader { geo in
@@ -58,7 +57,7 @@ struct MathDefinitionView: View {
 
                     HStack {
                         Button {
-                            dismiss()
+                            router.pop()
                         } label: {
                             Text("Back")
                                 .font(.system(size: 24))
@@ -69,7 +68,7 @@ struct MathDefinitionView: View {
                         Spacer()
 
                         Button {
-                            isPressed = true
+                            router.push(.operation)
                         } label: {
                             Text("Next")
                                 .font(.system(size: 24))
@@ -82,9 +81,6 @@ struct MathDefinitionView: View {
                 }
                 .padding(.vertical, 40)
                 .padding(.horizontal, 20)
-            }
-            .navigationDestination(isPresented: $isPressed) {
-                ConvolutionOperationView()
             }
             .navigationBarBackButtonHidden()
         }

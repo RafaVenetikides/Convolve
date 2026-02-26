@@ -8,8 +8,7 @@
 import SwiftUI
 
 struct ImageProcessingExampleView: View {
-    @Environment(\.dismiss) private var dismiss
-    @State private var isPressed = false
+    @EnvironmentObject private var router: NavRouter
     @StateObject private var vm = ConvolutionViewModel()
 
     private let box3: [Float] = Array(repeating: 1.0 / 9.0, count: 9)
@@ -119,7 +118,7 @@ struct ImageProcessingExampleView: View {
 
                     HStack {
                         Button {
-                            dismiss()
+                            router.pop()
                         } label: {
                             Text("Back")
                                 .font(.system(size: 24))
@@ -130,7 +129,7 @@ struct ImageProcessingExampleView: View {
                         Spacer()
 
                         Button {
-                            isPressed = true
+                            router.push(.applicationCNN)
                         } label: {
                             Text("Next")
                                 .font(.system(size: 24))
@@ -141,9 +140,6 @@ struct ImageProcessingExampleView: View {
                 }
                 .padding(.vertical, 40)
                 .padding(.horizontal, 20)
-                .navigationDestination(isPresented: $isPressed) {
-                    NeuralNetworkExampleView()
-                }
                 .navigationBarBackButtonHidden()
             }
         }

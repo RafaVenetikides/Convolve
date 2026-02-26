@@ -8,8 +8,7 @@
 import SwiftUI
 
 struct NeuralNetworkExampleView: View {
-    @Environment(\.dismiss) private var dismiss
-    @State private var isPressed = false
+    @EnvironmentObject private var router: NavRouter
 
     @StateObject private var vm = NeuralConvolutionsViewModel()
 
@@ -72,7 +71,7 @@ struct NeuralNetworkExampleView: View {
 
                     HStack {
                         Button {
-                            dismiss()
+                            router.pop()
                         } label: {
                             Text("Back")
                                 .font(.system(size: 24))
@@ -83,7 +82,7 @@ struct NeuralNetworkExampleView: View {
                         Spacer()
 
                         Button {
-                            isPressed = true
+                            router.push(.playgroundIntro)
                         } label: {
                             Text("Next")
                                 .font(.system(size: 24))
@@ -94,9 +93,6 @@ struct NeuralNetworkExampleView: View {
                 }
                 .padding(.vertical, 40)
                 .padding(.horizontal, 20)
-                .navigationDestination(isPresented: $isPressed) {
-                    PlaygroundIntroductionView()
-                }
                 .navigationBarBackButtonHidden()
             }
         }

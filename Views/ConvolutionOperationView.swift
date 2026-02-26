@@ -8,9 +8,8 @@
 import SwiftUI
 
 struct ConvolutionOperationView: View {
-    @Environment(\.dismiss) private var dismiss
     @StateObject private var vm = ConvolutionAnimationViewModel()
-    @State private var isPressed = false
+    @EnvironmentObject private var router: NavRouter
     private let isIpad: Bool = UIDevice.current.userInterfaceIdiom == .pad
 
     var stepText: AttributedString {
@@ -116,7 +115,7 @@ struct ConvolutionOperationView: View {
 
                     HStack {
                         Button {
-                            dismiss()
+                            router.pop()
                         } label: {
                             Text("Back")
                                 .font(.system(size: 24))
@@ -127,7 +126,7 @@ struct ConvolutionOperationView: View {
                         Spacer()
 
                         Button {
-                            isPressed = true
+                            router.push(.applicationImage)
                         } label: {
                             Text("Next")
                                 .font(.system(size: 24))
@@ -139,9 +138,6 @@ struct ConvolutionOperationView: View {
                 }
                 .padding(.vertical, 40)
                 .padding(.horizontal, 20)
-            }
-            .navigationDestination(isPresented: $isPressed) {
-                ImageProcessingExampleView()
             }
             .navigationBarBackButtonHidden()
         }

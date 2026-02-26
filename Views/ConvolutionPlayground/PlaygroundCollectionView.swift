@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct PlaygroundCollectionView: View {
-    @Environment(\.dismiss) private var dismiss
+    @EnvironmentObject private var router: NavRouter
 
     private let assets: [DemoAsset] = [
         .init(assetName: "seven", title: "Hand drawn seven"),
@@ -41,8 +41,8 @@ struct PlaygroundCollectionView: View {
                 ScrollView {
                     LazyVGrid(columns: columns, spacing: 30) {
                         ForEach(assets) { item in
-                            NavigationLink {
-                                ConvolutionView(assetName: item.assetName)
+                            Button {
+                                router.push(.convolution(assetName: item.assetName))
                             } label: {
                                 AssetCard(item: item)
                             }
@@ -57,7 +57,7 @@ struct PlaygroundCollectionView: View {
 
                 HStack {
                     Button {
-                            dismiss()
+                        router.pop()
                         } label: {
                             Text("Back")
                                 .font(.system(size: 24))
@@ -105,5 +105,6 @@ struct AssetCard: View {
 #Preview {
     NavigationStack {
         PlaygroundCollectionView()
+            .environmentObject(NavRouter())
     }
 }
