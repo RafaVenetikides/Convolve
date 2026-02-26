@@ -84,7 +84,7 @@ struct ImageProcessingExampleView: View {
                                 }
                             }
                             .frame(maxHeight: geo.size.height * 0.15)
-//                            .contentShape(Rectangle())
+                            .contentShape(Rectangle())
 
                             HStack {
                                 Button {

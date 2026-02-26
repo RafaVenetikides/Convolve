@@ -19,6 +19,7 @@ struct ConvolutionAnimationView: View {
                 vm.step(-1)
             } label: {
                 Image(systemName: "backward.end.fill")
+                    .foregroundStyle(.white)
                     .font(.customBody)
                     .padding(10)
             }
@@ -41,6 +42,7 @@ struct ConvolutionAnimationView: View {
                 vm.step(+1)
             } label: {
                 Image(systemName: "forward.end.fill")
+                    .foregroundStyle(.white)
                     .font(.customBody)
                     .padding(10)
 
@@ -59,12 +61,14 @@ struct ConvolutionAnimationView: View {
         VStack(spacing: 8) {
             HStack(spacing: 8) {
                 Text("(3, 4, 5) * (8, 9, 10)")
+                    .foregroundStyle(.white)
                     .font(.customBody)
                     .monospaced()
             }
 
             HStack(spacing: 8) {
                 Text("= ")
+                    .foregroundStyle(.white)
                 resultTupleView
             }
             .font(.headline)
@@ -74,6 +78,7 @@ struct ConvolutionAnimationView: View {
     private var resultTupleView: some View {
         HStack(spacing: 0) {
             Text("(")
+                .foregroundStyle(.white)
                 .font(.customBody)
 
             ForEach(vm.convResult.indices, id: \.self) { i in
@@ -98,11 +103,13 @@ struct ConvolutionAnimationView: View {
 
                 if i != vm.convResult.count - 1 {
                     Text(", ")
+                        .foregroundStyle(.white)
                         .font(.customBody)
                 }
             }
 
             Text(")")
+                .foregroundStyle(.white)
                 .font(.customBody)
         }
         .animation(.easeIn(duration: 0.25), value: vm.shift)
@@ -198,6 +205,7 @@ struct ConvolutionAnimationView: View {
                     .frame(width: isIpad ? 54 : 40, height: isIpad ? 54 : 40)
 
                 Text("\(value)")
+                    .foregroundStyle(.white)
                     .font(.customBodySmall)
                     .fontWeight(.semibold)
                     .rotationEffect(.degrees(-counterRotateTextDeg))
@@ -216,11 +224,14 @@ struct ConvolutionAnimationView: View {
                             .font(.headline)
 
                         Text(vm.expressionForCurrentShift())
+                            .foregroundStyle(.white)
                             .monospaced()
                     }
 
                     HStack(spacing: 6) {
                         Text("= ")
+                            .foregroundStyle(.white)
+                        
                         Text("\(vm.convResult[vm.shift])")
                             .foregroundStyle(.yellow)
                             .font(.headline)
@@ -237,32 +248,6 @@ struct ConvolutionAnimationView: View {
             }
         }
         .animation(.easeInOut(duration: 0.35), value: vm.shift)
-    }
-
-    private var controls: some View {
-        VStack(spacing: 10) {
-
-            HStack(spacing: 10) {
-                Button("Prev step") { vm.step(-1) }
-                    .buttonStyle(.borderedProminent)
-                    .disabled(vm.stage == .original)
-
-                Button("Next step") { vm.step(+1) }
-                    .buttonStyle(.borderedProminent)
-                    .disabled(
-                        vm.stage == .shiftReady
-                            && vm.shift >= vm.convResult.count - 1
-                    )
-
-                Button("Reset") {
-                    withAnimation(.easeInOut(duration: 0.3)) {
-                        vm.resetAll()
-                    }
-                }
-                .buttonStyle(.bordered)
-                .disabled(vm.stage == .original)
-            }
-        }
     }
 }
 

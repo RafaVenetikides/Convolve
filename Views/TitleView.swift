@@ -118,4 +118,5 @@ struct TitleView: View {
 
 #Preview {
     TitleView()
+        .environmentObject(NavRouter())
 }
