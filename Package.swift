@@ -8,13 +8,13 @@ import PackageDescription
 import AppleProductTypes
 
 let package = Package(
-    name: "WWDC26",
+    name: "Convolve",
     platforms: [
         .iOS("26.0")
     ],
     products: [
         .iOSApplication(
-            name: "WWDC26",
+            name: "Convolve",
             targets: ["AppModule"],
             bundleIdentifier: "dev.venetikides.WWDC26",
             teamIdentifier: "2Q5VC69BFD",

@@ -71,6 +71,16 @@ struct PlaygroundCollectionView: View {
             .padding(.vertical, 28)
             .padding(.horizontal, 20)
         }
+        .toolbar(content: {
+            ToolbarItem(placement: .topBarTrailing) {
+                Button {
+                    router.goHome()
+                } label: {
+                    Image(systemName: "house.fill")
+                        .foregroundStyle(.tint)
+                }
+            }
+        })
         .navigationBarBackButtonHidden()
     }
 }

@@ -71,6 +71,15 @@ struct IntroductionView: View {
                     Spacer()
 
                     HStack {
+                        Button {
+                            router.pop()
+                        } label: {
+                            Text("Back")
+                                .font(.system(size: 24))
+                                .padding(10)
+                        }
+                        .buttonStyle(.bordered)
+
                         Spacer()
 
                         Button {
