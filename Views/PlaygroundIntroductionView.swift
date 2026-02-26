@@ -25,7 +25,7 @@ struct PlaygroundIntroductionView: View {
 
                     VStack(alignment: .leading) {
                         Text(
-                            "That was just a small introduction to the vast field of the convolutions, there is a lot more areas that utilize this operation, like probability/statistics, signal processing, physics, and so on."
+                            "That was just a small introduction to the vast field of convolutions, there are a lot more areas that utilize this operation, like probability/statistics, signal processing, physics, and so on."
                         )
                         .font(.system(size: 28))
                         .foregroundStyle(.white)
@@ -33,7 +33,7 @@ struct PlaygroundIntroductionView: View {
                         .padding(.bottom, geo.size.height * 0.03)
 
                         Text(
-                            "Now you will enter a playground where you can play around with convolution in diferent images and se their diferent results using diferent kernels. Feel free to explore and play as you like."
+                            "Now you will enter a playground where you can play around with convolution in different images and see their results using diferent kernels. Feel free to explore and play as you like."
                         )
                         .font(.system(size: 28))
                         .foregroundStyle(.white)

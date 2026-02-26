@@ -27,7 +27,7 @@ struct ImageProcessingExampleView: View {
                         .padding(.bottom, geo.size.height * 0.01)
 
                     Text(
-                        "This is the whole process of a discrete convolution, and it has a lot of applications in areas such as image processing. Instead of working with lists, we work with 2D matrices: The image itself (a grid of pixels) and a small matrix called a **kernel**"
+                        "This is the whole process of a discrete convolution, and it has a lot of applications in areas such as image processing. Instead of working with lists, we work with two 2D matrices: The image itself (a grid of pixels) and a small matrix called a **kernel**."
                     )
                     .font(.system(size: 28))
                     .foregroundStyle(.white)

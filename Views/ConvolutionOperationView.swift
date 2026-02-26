@@ -20,14 +20,14 @@ struct ConvolutionOperationView: View {
             raw =
                 ""
         case .flip:
-            raw = "First we **flip** the second list of numbers"
+            raw = "First we **flip** the second list of numbers."
 
         case .multiply:
             raw =
-                "We **multiply** the first and last operators from the lists, and **add** all the results"
+                "We **multiply** the first and last operators from the lists, and **add** all the results."
         case .shift:
             raw =
-                "Then we **shift** the lists and repeat the second step until it's over"
+                "Then we **shift** the lists and repeat the second step until it's over."
         }
 
         return (try? AttributedString(markdown: raw)) ?? AttributedString(raw)

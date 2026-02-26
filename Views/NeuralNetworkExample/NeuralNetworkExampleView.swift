@@ -27,7 +27,7 @@ struct NeuralNetworkExampleView: View {
                         .padding(.bottom, 20)
 
                     Text(
-                        "Convolutions are also a big deal in Artificial Intelligence, especially in **Convolutional Neural Networks** (CNNs). This type of neural network uses convolution to extract information from all kinds of data, like images, text or even audio, to interpret it and make classifications"
+                        "Convolutions are also a big deal in Artificial Intelligence, especially in **Convolutional Neural Networks** (CNNs). This type of neural network uses convolution to extract information from all kinds of data, like images, text or even audio, to interpret it and make classifications."
                     )
                     .font(.customBody)
                     .foregroundStyle(.white)
