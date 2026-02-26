@@ -12,13 +12,35 @@ struct TitleView: View {
     @State private var isSpinning = false
     @StateObject private var vm = ConvolutionViewModel()
 
-    private let customKernel: [Float] = {
-        let size = 3
-        var kernel = Array(repeating: 0.0 as Float, count: size * size)
-        let center = size / 2
-        kernel[center * size + center] = 1.0
-        return kernel
-    }()
+    private let kernelCycle: [KernelSpec] = [
+        .init(
+            name: "Identity",
+            size: 3,
+            weights: [
+                0, 0, 0,
+                0, 1, 0,
+                0, 0, 0
+            ]
+        ),
+        .init(
+            name: "Edge Detect",
+            size: 3,
+            weights: KernelPreset.edgeDetect.makeKernel(size: 3)
+        ),
+        .init(
+            name: "Sobel X",
+            size: 3,
+            weights: KernelPreset.sobelX.makeKernel(size: 3)
+        ),
+        .init(
+            name: "Box Blur",
+            size: 7,
+            weights: KernelPreset.gaussianBlur.makeKernel(size: 7)
+        ),
+    ]
+
+    @State private var kernelIndex = 0
+    @State private var cycleTask: Task<Void, Never>?
 
     var body: some View {
         GeometryReader { geo in
@@ -84,10 +106,17 @@ struct TitleView: View {
         }
         .task {
             vm.useColor = true
-            vm.pixelsPerTick = 40
-            vm.setCustomKernel(size: 3, kernel: customKernel)
+            vm.pixelsPerTick = 60
             vm.setup(assetName: "Title")
+            applyKernel(kernelCycle[kernelIndex])
             vm.start()
+
+            startKernelCycleLoop(everySeconds: 8)
+        }
+        .onDisappear {
+            cycleTask?.cancel()
+            cycleTask = nil
+            vm.stop()
         }
     }
 
@@ -113,6 +142,28 @@ struct TitleView: View {
                 .animation(.linear(duration: 1.0 / 30.0), value: vm.cursorX)
                 .animation(.linear(duration: 1.0 / 30.0), value: vm.cursorY)
         }
+    }
+
+    private func startKernelCycleLoop(everySeconds seconds: Double) {
+        cycleTask?.cancel()
+        cycleTask = Task { @MainActor in
+            while !Task.isCancelled {
+                try? await Task.sleep(nanoseconds: UInt64(seconds * 1_000_000_000))
+
+                kernelIndex = (kernelIndex + 1) % kernelCycle.count
+                let next = kernelCycle[kernelIndex]
+
+                vm.stop()
+                applyKernel(next)
+                vm.reset()
+                vm.start()
+            }
+        }
+    }
+
+    @MainActor
+    private func applyKernel(_ item: KernelSpec) {
+        vm.setCustomKernel(size: item.size, kernel: item.weights)
     }
 }
 

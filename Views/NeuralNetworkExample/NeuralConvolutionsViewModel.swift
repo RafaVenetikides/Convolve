@@ -20,6 +20,7 @@ final class NeuralConvolutionsViewModel: ObservableObject {
     @Published var cursorY: Int = 0
     @Published private(set) var imageWidth: Int = 1
     @Published private(set) var imageHeight: Int = 1
+    @Published var isFinished: Bool = false
 
     let kernelSize: Int = 3
 
@@ -29,7 +30,7 @@ final class NeuralConvolutionsViewModel: ObservableObject {
 
     private let kernels: [KernelSpec] = [
         .init(name: "Edge", size: 3, weights: [-1,-1,-1, -1,8,-1, -1,-1,-1]),
-        .init(name: "Sobel X", size: 3, weights: [-1,0,1, -2,0,2, -1,0,1]),
+        .init(name: "Sobel X", size: 3, weights: [1,0,-1, 2,0,-2, 1,0,-1]),
         .init(name: "Sobel Y", size: 3, weights: [-1,-2,-1, 0,0,0, 1,2,1]),
     ]
 
@@ -44,6 +45,7 @@ final class NeuralConvolutionsViewModel: ObservableObject {
         engine.$cursorY.assign(to: &$cursorY)
         engine.$imageWidth.assign(to: &$imageWidth)
         engine.$imageHeight.assign(to: &$imageHeight)
+        engine.$isFinished.assign(to: &$isFinished)
     }
 
     func setup(assetName: String) {
@@ -65,4 +67,5 @@ final class NeuralConvolutionsViewModel: ObservableObject {
 
     func start() { engine.start() }
     func stop() { engine.stop() }
+    func reset() { engine.reset() }
 }

@@ -9,8 +9,9 @@ import SwiftUI
 
 struct NeuralNetworkExampleView: View {
     @EnvironmentObject private var router: NavRouter
-
     @StateObject private var vm = NeuralConvolutionsViewModel()
+
+    @State private var loopTask: Task<Void, Never>?
 
     var body: some View {
         GeometryReader { geo in
@@ -61,7 +62,7 @@ struct NeuralNetworkExampleView: View {
                         .multilineTextAlignment(.leading)
                     }
                     .padding(30)
-                    .background{
+                    .background {
                         RoundedRectangle(cornerRadius: 8)
                             .stroke(.white)
                     }
@@ -99,8 +100,12 @@ struct NeuralNetworkExampleView: View {
         .task {
             vm.setup(assetName: "seven")
             vm.start()
+
+            startLoop(pauseSeconds: 5)
         }
         .onDisappear {
+            loopTask?.cancel()
+            loopTask = nil
             vm.stop()
         }
     }
@@ -117,7 +122,9 @@ struct NeuralNetworkExampleView: View {
                 } else {
                     RoundedRectangle(cornerRadius: 12)
                         .fill(.white.opacity(0.08))
-                        .overlay(Text("Computing...").foregroundStyle(.secondary))
+                        .overlay(
+                            Text("Computing...").foregroundStyle(.secondary)
+                        )
                 }
             }
 
@@ -146,9 +153,35 @@ struct NeuralNetworkExampleView: View {
             RoundedRectangle(cornerRadius: 6)
                 .strokeBorder(.yellow, lineWidth: 2)
                 .frame(width: kw, height: kh)
-                .position(x: x + kw/2, y: y + kh/2)
-                .animation(.linear(duration: 1.0/30.0), value: vm.cursorX)
-                .animation(.linear(duration: 1.0/30.0), value: vm.cursorY)
+                .position(x: x + kw / 2, y: y + kh / 2)
+                .animation(.linear(duration: 1.0 / 30.0), value: vm.cursorX)
+                .animation(.linear(duration: 1.0 / 30.0), value: vm.cursorY)
+        }
+    }
+
+    @MainActor
+    private func startLoop(pauseSeconds: Double) {
+        loopTask?.cancel()
+
+        loopTask = Task { @MainActor in
+            while !Task.isCancelled {
+
+                while !vm.isFinished && !Task.isCancelled {
+                    try? await Task.sleep(nanoseconds: 50_000_000)
+                }
+                if Task.isCancelled { break }
+
+                if pauseSeconds > 0 {
+                    let ns = UInt64(pauseSeconds * 1_000_000_000)
+                    try? await Task.sleep(nanoseconds: ns)
+                }
+
+                vm.reset()
+
+                try? await Task.sleep(nanoseconds: 80_000_000)
+
+                vm.start()
+            }
         }
     }
 }
