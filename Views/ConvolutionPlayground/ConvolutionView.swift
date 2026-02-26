@@ -7,7 +7,8 @@
 
 import SwiftUI
 
-struct ConvolutionView: View{
+struct ConvolutionView: View {
+    @Environment(\.dismiss) private var dismiss
     @StateObject private var vm = ConvolutionViewModel()
     let assetName: String
 
@@ -15,10 +16,13 @@ struct ConvolutionView: View{
         ZStack {
             Color(.background)
                 .ignoresSafeArea()
-            
+
             VStack(spacing: 16) {
+
+                Spacer()
+
                 HStack(spacing: 12) {
-                    VStack( alignment: .leading, spacing: 8) {
+                    VStack(alignment: .leading, spacing: 8) {
                         Text("Original")
                             .font(.customBodySmall)
                             .foregroundStyle(.white)
@@ -36,7 +40,7 @@ struct ConvolutionView: View{
                     }
 
                     VStack(alignment: .leading, spacing: 8) {
-                        Text("Exit (convolution)")
+                        Text("Result")
                             .font(.customBodySmall)
                             .foregroundStyle(.white)
 
@@ -51,8 +55,120 @@ struct ConvolutionView: View{
                     }
                 }
 
-                controls
-                    .tint(.blue)
+                VStack(spacing: 12) {
+                    HStack {
+                        VStack(spacing: 18) {
+                            Text("Kernel")
+                                .font(.system(size: 26, weight: .bold))
+                                .foregroundStyle(.white)
+
+                            Menu {
+                                ForEach(KernelPreset.allCases) { preset in
+                                    Button {
+                                        vm.selectedPreset = preset
+                                        vm.setPreset(preset)
+                                    } label: {
+                                            Text(preset.rawValue)
+                                                .font(.system(size: 22))
+                                    }
+                                }
+                            } label: {
+                                HStack {
+                                    Text(vm.selectedPreset.rawValue)
+                                        .font(.system(size: 22))
+
+                                    Image(systemName: "chevron.up.chevron.down")
+                                }
+                            }
+                        }
+
+                        Spacer()
+
+                        VStack(spacing: 18) {
+                            Text("Intensity")
+                                .font(.system(size: 26, weight: .bold))
+                                .foregroundStyle(.white)
+
+                            Menu {
+                                ForEach(BlurIntensity.allCases) { intensity in
+                                    Button {
+                                        vm.setBlurIntensity(intensity)
+                                    } label: {
+                                            Text(intensity.rawValue)
+                                                .font(.system(size: 22))
+                                    }
+                                }
+                            } label: {
+                                HStack {
+                                    Text(vm.blurIntensity.rawValue)
+                                        .font(.system(size: 22))
+
+                                    Image(systemName: "chevron.up.chevron.down")
+                                }
+                            }
+                            .disabled(!vm.selectedPreset.isBlur)
+
+                        }
+                    }
+                    .frame(width: 300)
+                    .padding(20)
+                    .background {
+                        RoundedRectangle(cornerRadius: 6)
+                            .stroke(.white, lineWidth: 2)
+                    }
+                    HStack(spacing: 24) {
+
+                        Button {
+                            vm.stepOnce()
+                        } label: {
+                            Text("Step")
+                                .font(.system(size: 26))
+                                .padding(10)
+                        }
+                            .buttonStyle(.bordered)
+
+                        Button {
+                            vm.primaryAction()
+                        } label: {
+                            Image(
+                                systemName: vm.isRunning
+                                    ? "pause.fill" : "play.fill"
+                            )
+                            .padding(10)
+                            .font(.customBody)
+                            .bold()
+                        }
+                        .clipShape(.circle)
+                        .buttonStyle(.borderedProminent)
+
+                        Button {
+                            vm.reset()
+                        } label: {
+                            Text("Reset")
+                                .font(.system(size: 26))
+                                .padding(10)
+                        }
+                            .buttonStyle(.bordered)
+                    }
+
+                    HStack(spacing: 24) {
+                        Text("Speed")
+                            .foregroundStyle(.white)
+                            .font(.customBodySmall)
+
+                        LogSlider(
+                            value: $vm.pixelsPerTick,
+                            minValue: 1,
+                            maxValue: 1000,
+                            step: 1
+                        )
+
+                        Text("\(Int(vm.pixelsPerTick)) px/step")
+                            .font(.customBodySmall)
+                            .foregroundStyle(.white)
+                            .frame(width: 120, alignment: .trailing)
+                    }
+                }
 
                 HStack(spacing: 16) {
                     Image(systemName: "info.circle")
@@ -64,16 +180,35 @@ struct ConvolutionView: View{
                         .font(.customBodySmall)
                 }
                 .padding(20)
-                .background{
+                .background {
                     RoundedRectangle(cornerRadius: 6)
-                        .stroke(.cyan)
+                        .stroke(.cyan, lineWidth: 2)
+                }
+
+                Spacer()
+
+                HStack {
+                    Button {
+                            dismiss()
+                        } label: {
+                            Text("Back")
+                                .font(.system(size: 24))
+                                .padding()
+                        }
+                        .buttonStyle(.bordered)
+
+                        Spacer()
                 }
             }
+            .navigationBarBackButtonHidden()
             .padding()
             .task { vm.setup(assetName: assetName) }
-            .onChange(of: vm.pixelsPerTick, { _, newValue in
-                vm.updateSpeed(newValue)
-            })
+            .onChange(
+                of: vm.pixelsPerTick,
+                { _, newValue in
+                    vm.updateSpeed(newValue)
+                }
+            )
         }
     }
 
@@ -86,65 +221,15 @@ struct ConvolutionView: View{
             let y = h * CGFloat(vm.cursorY) / CGFloat(max(1, vm.imageHeight))
 
             let kw = w * CGFloat(vm.kernelSize) / CGFloat(max(1, vm.imageWidth))
-            let kh = h * CGFloat(vm.kernelSize) / CGFloat(max(1, vm.imageHeight))
+            let kh =
+                h * CGFloat(vm.kernelSize) / CGFloat(max(1, vm.imageHeight))
 
             Rectangle()
                 .strokeBorder(.yellow, lineWidth: 2)
                 .frame(width: kw, height: kh)
-                .position(x: x + kw/2, y: y + kh/2)
-                .animation(.linear(duration: 1.0/60.0), value: vm.cursorX)
-                .animation(.linear(duration: 1.0/60.0), value: vm.cursorY)
-        }
-    }
-
-    private var controls: some View {
-        VStack(spacing: 12) {
-            HStack(spacing: 12) {
-                Button(vm.isRunning ? "Pause" : "Play") { vm.primaryAction() }
-                    .buttonStyle(.borderedProminent)
-
-                Button("Step") { vm.stepOnce() }
-                    .buttonStyle(.bordered)
-
-                Button("Reset") { vm.reset() }
-                    .buttonStyle(.bordered)
-            }
-
-            HStack {
-                Picker("Kernel", selection: $vm.selectedPreset) {
-                    ForEach(KernelPreset.allCases) { preset in
-                        Text(preset.rawValue).tag(preset)
-                    }
-                }
-                .pickerStyle(.menu)
-                .onChange(of: vm.selectedPreset) { _, newValue in
-                    vm.setPreset(newValue)
-                }
-                
-                if vm.selectedPreset.isBlur {
-                    Picker("Intensity", selection: $vm.blurIntensity) {
-                        ForEach(BlurIntensity.allCases) { intensity in
-                            Text(intensity.rawValue).tag(intensity)
-                        }
-                    }
-                    .pickerStyle(.menu)
-                    .onChange(of: vm.blurIntensity) { _, newValue in
-                        vm.setBlurIntensity(newValue)
-                    }
-                    .transition(.move(edge: .leading).combined(with: .opacity))
-                }
-            }
-            .animation(.linear(duration: 0.2), value: vm.selectedPreset.isBlur)
-
-
-            HStack {
-                Text("Speed")
-                LogSlider(value: $vm.pixelsPerTick, minValue: 1, maxValue: 1000, step: 1)
-
-                Text("\(Int(vm.pixelsPerTick)) px/tick")
-                    .monospacedDigit()
-                    .frame(width: 120, alignment: .trailing)
-            }
+                .position(x: x + kw / 2, y: y + kh / 2)
+                .animation(.linear(duration: 1.0 / 60.0), value: vm.cursorX)
+                .animation(.linear(duration: 1.0 / 60.0), value: vm.cursorY)
         }
     }
 }

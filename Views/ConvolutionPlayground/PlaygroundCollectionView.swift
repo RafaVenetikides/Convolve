@@ -52,10 +52,26 @@ struct PlaygroundCollectionView: View {
                     .padding(.top, 8)
                     .padding(.horizontal, 60)
                 }
+
+                Spacer()
+
+                HStack {
+                    Button {
+                            dismiss()
+                        } label: {
+                            Text("Back")
+                                .font(.system(size: 24))
+                                .padding()
+                        }
+                        .buttonStyle(.bordered)
+
+                        Spacer()
+                }
             }
             .padding(.vertical, 28)
             .padding(.horizontal, 20)
         }
+        .navigationBarBackButtonHidden()
     }
 }
 
