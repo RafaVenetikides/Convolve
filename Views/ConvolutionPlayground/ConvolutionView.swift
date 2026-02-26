@@ -63,7 +63,7 @@ struct ConvolutionView: View {
                                 .foregroundStyle(.white)
 
                             Menu {
-                                ForEach(KernelPreset.allCases) { preset in
+                                ForEach(KernelPreset.allCases.reversed()) { preset in
                                     Button {
                                         vm.selectedPreset = preset
                                         vm.setPreset(preset)
@@ -90,7 +90,7 @@ struct ConvolutionView: View {
                                 .foregroundStyle(.white)
 
                             Menu {
-                                ForEach(BlurIntensity.allCases) { intensity in
+                                ForEach(BlurIntensity.allCases.reversed()) { intensity in
                                     Button {
                                         vm.setBlurIntensity(intensity)
                                     } label: {
