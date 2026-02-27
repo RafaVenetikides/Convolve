@@ -101,14 +101,33 @@ struct PlaygroundCollectionView: View {
                 isLoadingPhoto = true
                 defer { isLoadingPhoto = false }
 
-                if let data = try? await newItem.loadTransferable(type: Data.self) {
-                    router.push(.convolutionPhoto(imageData: data))
+                if let data = try? await newItem.loadTransferable(type: Data.self), let image = UIImage(data: data) {
+                    let newImage = resizeImage(image: image, targetSize: .init(width: 256, height: 256))
+                    print(newImage.size)
+                    router.push(.convolutionPhoto(imageData: newImage.pngData()!))
                 }
 
                 pickedItem = nil
             }
         }
     }
+
+    private func resizeImage(image: UIImage, targetSize: CGSize) -> UIImage {
+            let size = image.size
+            let widthRatio  = targetSize.width  / size.width
+            let heightRatio = targetSize.height / size.height
+
+            let scaleFactor = min(widthRatio, heightRatio)
+
+            let newSize = CGSize(width: size.width * scaleFactor, height: size.height * scaleFactor)
+
+            let renderer = UIGraphicsImageRenderer(size: newSize)
+            let newImage = renderer.image { _ in
+                image.draw(in: CGRect(origin: .zero, size: newSize))
+            }
+
+            return newImage
+        }
 }
 
 struct AssetCard: View {
