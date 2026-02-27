@@ -49,7 +49,7 @@ struct ConvolutionOperationView: View {
     var body: some View {
         GeometryReader { geo in
             ZStack {
-                Color(.background)
+                Color("backgroundColor")
                     .ignoresSafeArea()
 
                 VStack {
@@ -86,7 +86,7 @@ struct ConvolutionOperationView: View {
 
                             Text("Step \(stepNumber)")
                                 .font(.customTitleSmall)
-                                .foregroundStyle(Color(.subtitleOrange))
+                                .foregroundStyle(Color("subtitleOrange"))
                         }
 
                         if vm.instructionStep != .intro {

@@ -13,7 +13,7 @@ struct IntroductionView: View {
     var body: some View {
         GeometryReader { geo in
             ZStack {
-                Color(.background)
+                Color("backgroundColor")
                     .ignoresSafeArea()
 
                 VStack {

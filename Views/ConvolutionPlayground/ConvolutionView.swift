@@ -14,7 +14,7 @@ struct ConvolutionView: View {
 
     var body: some View {
         ZStack {
-            Color(.background)
+            Color("backgroundColor")
                 .ignoresSafeArea()
 
             VStack(spacing: 16) {
