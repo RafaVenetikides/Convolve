@@ -10,7 +10,21 @@ import SwiftUI
 struct ConvolutionView: View {
     @EnvironmentObject private var router: NavRouter
     @StateObject private var vm = ConvolutionViewModel()
-    let assetName: String
+
+    private enum Source {
+        case asset(String)
+        case photo(Data)
+    }
+
+    private let source: Source
+
+    init(assetName: String) {
+        self.source = .asset(assetName)
+    }
+
+    init(imageData: Data) {
+        self.source = .photo(imageData)
+    }
 
     var body: some View {
         ZStack {
@@ -202,7 +216,14 @@ struct ConvolutionView: View {
             }
             .navigationBarBackButtonHidden()
             .padding()
-            .task { vm.setup(assetName: assetName) }
+            .task {
+                switch source {
+                case .asset(let name):
+                    vm.setup(assetName: name)
+                case .photo(let data):
+                    vm.setup(imageData: data)
+                }
+            }
             .onChange(
                 of: vm.pixelsPerTick,
                 { _, newValue in

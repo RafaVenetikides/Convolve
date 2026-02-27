@@ -33,9 +33,9 @@ struct TitleView: View {
             weights: KernelPreset.sobelX.makeKernel(size: 3)
         ),
         .init(
-            name: "Box Blur",
-            size: 7,
-            weights: KernelPreset.gaussianBlur.makeKernel(size: 7)
+            name: "Gaussian Blur",
+            size: 13,
+            weights: KernelPreset.gaussianBlur.makeKernel(size: 13)
         ),
     ]
 

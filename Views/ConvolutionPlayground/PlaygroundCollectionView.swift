@@ -6,9 +6,13 @@
 //
 
 import SwiftUI
+import PhotosUI
 
 struct PlaygroundCollectionView: View {
     @EnvironmentObject private var router: NavRouter
+
+    @State private var pickedItem: PhotosPickerItem?
+    @State private var isLoadingPhoto = false
 
     private let assets: [DemoAsset] = [
         .init(assetName: "seven", title: "Hand drawn seven"),
@@ -48,6 +52,15 @@ struct PlaygroundCollectionView: View {
                             }
                             .buttonStyle(.plain)
                         }
+
+                        PhotosPicker(
+                            selection: $pickedItem,
+                            matching: .images,
+                            photoLibrary: .shared()) {
+                                PhotoPickerCard(isLoading: isLoadingPhoto)
+                            }
+                            .buttonStyle(.plain)
+                            .disabled(isLoadingPhoto)
                     }
                     .padding(.top, 8)
                     .padding(.horizontal, 60)
@@ -82,6 +95,19 @@ struct PlaygroundCollectionView: View {
             }
         })
         .navigationBarBackButtonHidden()
+        .onChange(of: pickedItem) { _, newItem in
+            guard let newItem else { return }
+            Task {
+                isLoadingPhoto = true
+                defer { isLoadingPhoto = false }
+
+                if let data = try? await newItem.loadTransferable(type: Data.self) {
+                    router.push(.convolutionPhoto(imageData: data))
+                }
+
+                pickedItem = nil
+            }
+        }
     }
 }
 

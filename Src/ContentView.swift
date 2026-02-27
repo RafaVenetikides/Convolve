@@ -24,6 +24,8 @@ struct ContentView: View {
                         PlaygroundCollectionView()
                     case .convolution(let assetName):
                         ConvolutionView(assetName: assetName)
+                    case .convolutionPhoto(let data):
+                        ConvolutionView(imageData: data)
                     }
                 }
         }

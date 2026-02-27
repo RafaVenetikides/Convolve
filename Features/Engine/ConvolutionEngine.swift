@@ -108,6 +108,75 @@ final class ConvolutionEngine: ObservableObject {
         isFinished = false
     }
 
+    func configure(
+        imageData: Data,
+        mode: PixelMode,
+        kernels: [KernelSpec],
+        normalizer: (@Sendable (KernelSpec, [Float]) -> [Float])? = nil
+    ) {
+        guard !kernels.isEmpty else {
+            outputs = []
+            revealedOutputs = []
+            fullOutputs = []
+            return
+        }
+        stop()
+
+        self.mode = mode
+        self.kernels = kernels
+        self.normalizer = normalizer
+
+        switch mode {
+        case .argbffff:
+            guard
+                let loaded = ImageUtils.loadARGBFFFFBuffer(imageData: imageData)
+            else { return }
+            originalUIImage = loaded.original
+            imageWidth = loaded.width
+            imageHeight = loaded.height
+            input = loaded.buffer
+
+        case .grayscale:
+            guard
+                let loaded = ImageUtils.loadGrayscaleBuffer(
+                    imageData: imageData
+                )
+            else { return }
+            originalUIImage = loaded.original
+            imageWidth = loaded.width
+            imageHeight = loaded.height
+            input = loaded.buffer
+        }
+
+        cursorX = 0
+        cursorY = 0
+        isComputing = false
+        reachedEnd = false
+        lastRenderTime = 0
+
+        let pixelCount = max(0, imageWidth * imageHeight)
+        let stride = mode.stride
+        let bufferCount = pixelCount * stride
+
+        fullOutputs = []
+        revealedOutputs = Array(
+            repeating: Array(repeating: 0, count: bufferCount),
+            count: kernels.count
+        )
+
+        outputs = Array(
+            repeating: Self.makeImage(
+                from: Array(repeating: 0, count: bufferCount),
+                width: imageWidth,
+                height: imageHeight,
+                mode: mode
+            ),
+            count: kernels.count
+        )
+
+        isFinished = false
+    }
+
     func start() {
         guard !isRunning else { return }
         guard imageWidth > 0, imageHeight > 0, !input.isEmpty, !kernels.isEmpty
@@ -266,7 +335,11 @@ final class ConvolutionEngine: ObservableObject {
         let kernelsSnapshot = kernels
         let normalizerSnapshot = normalizer
 
-        computeTask = Task.detached(priority: .userInitiated) { [inputSnapshot, w, h, modeSnapshot, kernelsSnapshot, normalizerSnapshot] in
+        computeTask = Task.detached(priority: .userInitiated) {
+            [
+                inputSnapshot, w, h, modeSnapshot, kernelsSnapshot,
+                normalizerSnapshot
+            ] in
             let outs = Self.computeAll(
                 input: inputSnapshot,
                 width: w,
@@ -296,7 +369,6 @@ final class ConvolutionEngine: ObservableObject {
             }
         }
     }
-
 
     nonisolated private static func computeAll(
         input: [Float],
@@ -341,7 +413,6 @@ final class ConvolutionEngine: ObservableObject {
         return outs
     }
 
-
     private func scheduleRenderIfNeeded(force: Bool = false) {
         let now = CACurrentMediaTime()
         if !force {
@@ -354,7 +425,7 @@ final class ConvolutionEngine: ObservableObject {
         let modeSnapshot = mode
         let snapshot = revealedOutputs
 
-        Task.detached(priority: .userInitiated) { [weak self] in
+        Task.detached(priority: .background) { [weak self] in
             guard let self else { return }
 
             var imgs: [Image?] = []

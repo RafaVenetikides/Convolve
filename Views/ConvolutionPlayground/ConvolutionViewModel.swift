@@ -31,6 +31,13 @@ final class ConvolutionViewModel: ObservableObject {
     let engine = ConvolutionEngine()
     private var currentAssetName: String?
 
+    private enum Source {
+        case asset(String)
+        case photo(Data)
+    }
+
+    private var currentSource: Source?
+
     init() {
         bind()
     }
@@ -74,10 +81,20 @@ final class ConvolutionViewModel: ObservableObject {
     private var mode: PixelMode { useColor ? .argbffff : .grayscale }
 
     func setup(assetName: String) {
-        currentAssetName = assetName
+        currentSource = .asset(assetName)
         engine.pixelsPerTick = pixelsPerTick
         engine.configure(
             assetName: assetName,
+            mode: mode,
+            kernels: [kernelSpec]
+        )
+    }
+
+    func setup(imageData: Data) {
+        currentSource = .photo(imageData)
+        engine.pixelsPerTick = pixelsPerTick
+        engine.configure(
+            imageData: imageData,
             mode: mode,
             kernels: [kernelSpec]
         )
@@ -144,11 +161,18 @@ final class ConvolutionViewModel: ObservableObject {
     }
 
     private func reconfigureKeepingAsset() {
-        guard let assetName = currentAssetName else { return }
+        guard let source = currentSource else { return }
 
         let wasRunning = isRunning
         stop()
-        setup(assetName: assetName)
+
+        switch source {
+        case .asset(let assetName):
+            setup(assetName: assetName)
+        case .photo(let data):
+            setup(imageData: data)
+        }
+
         if wasRunning { start() }
     }
 }
