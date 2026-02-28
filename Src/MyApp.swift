@@ -12,7 +12,7 @@ struct MyApp: App {
                 ContentView()
                     .preferredColorScheme(.dark)
 
-                if !orientation.isPortrait {
+                if !(orientation == .portrait) && !(orientation == .faceUp) && !(orientation == .faceDown) && !(orientation == .portraitUpsideDown) {
                     OrientationOverlayView()
                         .transition(.opacity)
                         .zIndex(999)

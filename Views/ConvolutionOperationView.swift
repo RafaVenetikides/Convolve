@@ -12,6 +12,9 @@ struct ConvolutionOperationView: View {
     @EnvironmentObject private var router: NavRouter
     private let isIpad: Bool = UIDevice.current.userInterfaceIdiom == .pad
 
+    private enum Focus: Hashable { case title, next }
+    @AccessibilityFocusState private var focus: Focus?
+
     var stepText: AttributedString {
         let raw: String
 
@@ -122,6 +125,8 @@ struct ConvolutionOperationView: View {
                                 .padding(10)
                         }
                         .buttonStyle(.bordered)
+                        .accessibilityLabel("Back")
+                        .accessibilityHint("Returns to the previous screen.")
 
                         Spacer()
 
@@ -134,6 +139,8 @@ struct ConvolutionOperationView: View {
                         }
                         .disabled(!vm.hasFinished)
                         .buttonStyle(.borderedProminent)
+                        .accessibilityLabel("Next")
+                        .accessibilityHint("Opens the image processing example.")
                     }
                 }
                 .padding(.vertical, 40)

@@ -10,6 +10,9 @@ import SwiftUI
 struct MathDefinitionView: View {
     @EnvironmentObject private var router: NavRouter
 
+    private enum Focus: Hashable { case title, next }
+    @AccessibilityFocusState private var focus: Focus?
+
     var body: some View {
         GeometryReader { geo in
             ZStack {
@@ -37,6 +40,13 @@ struct MathDefinitionView: View {
                             .resizable()
                             .scaledToFit()
                             .frame(width: geo.size.width * 0.6)
+                            .accessibilityElement(children: .ignore)
+                            .accessibilityAddTraits(.isImage)
+                            .accessibilityLabel("Convolution definition")
+                            .accessibilityValue(
+                                "Integral from negative infinity to infinity of f of tau times g of t minus tau, d tau."
+                            )
+
 
                         Text(
                             "It might look intimidating at first glance, but I promise if you stick here, we will find out that it's actually a pretty simple operation."
@@ -64,6 +74,8 @@ struct MathDefinitionView: View {
                                 .padding(10)
                         }
                         .buttonStyle(.bordered)
+                        .accessibilityLabel("Back")
+                        .accessibilityHint("Returns to the previous screen.")
 
                         Spacer()
 
@@ -75,6 +87,9 @@ struct MathDefinitionView: View {
                                 .padding(10)
                         }
                         .buttonStyle(.borderedProminent)
+                        .accessibilityLabel("Next")
+                        .accessibilityHint("Opens the convolution operation.")
+                        .accessibilityFocused($focus, equals: .next)
 
                     }
                     .padding(.top, 20)

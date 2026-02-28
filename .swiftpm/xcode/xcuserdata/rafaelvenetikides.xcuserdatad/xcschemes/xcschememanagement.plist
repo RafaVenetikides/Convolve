@@ -17,6 +17,11 @@
 	</dict>
 	<key>SuppressBuildableAutocreation</key>
 	<dict>
+		<key>Convolve</key>
+		<dict>
+			<key>primary</key>
+			<true/>
+		</dict>
 		<key>WWDC26</key>
 		<dict>
 			<key>primary</key>

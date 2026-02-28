@@ -11,6 +11,9 @@ struct ImageProcessingExampleView: View {
     @EnvironmentObject private var router: NavRouter
     @StateObject private var vm = ConvolutionViewModel()
 
+    private enum Focus: Hashable { case title, next }
+    @AccessibilityFocusState private var focus: Focus?
+
     private let box3: [Float] = Array(repeating: 1.0 / 9.0, count: 9)
 
     var body: some View {
@@ -45,15 +48,25 @@ struct ImageProcessingExampleView: View {
                                     .scaledToFit()
                                     .frame(maxHeight: geo.size.height * 0.15)
                                     .grayscale(1.0)
+                                    .accessibilityLabel("Moon pixel art")
 
                                 Text("*")
                                     .font(.system(size: 68))
                                     .foregroundStyle(.white)
 
-                                VStack(spacing: 0) {
-                                    vectorRow()
-                                    vectorRow()
-                                    vectorRow()
+                                Group {
+                                    VStack(spacing: 0) {
+                                        vectorRow()
+                                            .accessibilityHidden(true)
+                                        vectorRow()
+                                            .accessibilityHidden(true)
+                                        vectorRow()
+                                            .accessibilityHidden(true)
+                                    }
+                                    .accessibilityElement(children: .ignore)
+                                    .accessibilityLabel(
+                                        "3 by 3 matrix of 1 over 9 values"
+                                    )
                                 }
                             }
 
@@ -61,42 +74,50 @@ struct ImageProcessingExampleView: View {
                                 .font(.system(size: 20))
                                 .foregroundStyle(.secondary)
 
-                            Group {
-                                if let out = vm.outputImage {
-                                    out
-                                        .resizable()
-                                        .interpolation(.none)
-                                        .scaledToFit()
-                                        .overlay(resultKernelOverlay)
-                                } else {
-                                    RoundedRectangle(cornerRadius: 12)
-                                        .fill(.white.opacity(0.08))
-                                        .overlay(
-                                            Text("Rendering...")
-                                                .foregroundStyle(.secondary)
-                                                .font(
-                                                    .system(
-                                                        size: 18,
-                                                        design: .monospaced
+
+                            VStack {
+                                Group {
+                                    if let out = vm.outputImage {
+                                        out
+                                            .resizable()
+                                            .interpolation(.none)
+                                            .scaledToFit()
+                                            .overlay(resultKernelOverlay)
+                                    } else {
+                                        RoundedRectangle(cornerRadius: 12)
+                                            .fill(.white.opacity(0.08))
+                                            .overlay(
+                                                Text("Rendering...")
+                                                    .foregroundStyle(.secondary)
+                                                    .font(
+                                                        .system(
+                                                            size: 18,
+                                                            design: .monospaced
+                                                        )
                                                     )
-                                                )
-                                        )
+                                            )
+                                    }
                                 }
+                                .frame(maxHeight: geo.size.height * 0.15)
+                                .contentShape(Rectangle())
                             }
-                            .frame(maxHeight: geo.size.height * 0.15)
-                            .contentShape(Rectangle())
+                            .accessibilityElement(children: .ignore)
+                            .accessibilityLabel("Blurred moon pixel art")
 
                             HStack {
                                 Button {
                                     vm.primaryAction()
                                 } label: {
-                                    Image(systemName: vm.isRunning ? "pause.fill" : "play.fill")
-                                        .font(.customBody)
-                                        .padding(10)
+                                    Image(
+                                        systemName: vm.isRunning
+                                            ? "pause.fill" : "play.fill"
+                                    )
+                                    .font(.customBody)
+                                    .padding(10)
                                 }
                                 .clipShape(.circle)
                                 .buttonStyle(.borderedProminent)
-                           }
+                            }
                         }
                         .padding(.bottom, 60)
 
@@ -108,7 +129,7 @@ struct ImageProcessingExampleView: View {
                         .multilineTextAlignment(.leading)
                     }
                     .padding(30)
-                    .background{
+                    .background {
                         RoundedRectangle(cornerRadius: 8)
                             .stroke(.white)
                     }
@@ -125,6 +146,8 @@ struct ImageProcessingExampleView: View {
                                 .padding(10)
                         }
                         .buttonStyle(.bordered)
+                        .accessibilityLabel("Back")
+                        .accessibilityHint("Returns to the previous screen.")
 
                         Spacer()
 
@@ -136,6 +159,8 @@ struct ImageProcessingExampleView: View {
                                 .padding(10)
                         }
                         .buttonStyle(.borderedProminent)
+                        .accessibilityLabel("Next")
+                        .accessibilityHint("Opens the Neural Network example.")
                     }
                 }
                 .padding(.vertical, 40)

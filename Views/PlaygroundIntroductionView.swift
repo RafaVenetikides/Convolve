@@ -10,6 +10,10 @@ import SwiftUI
 struct PlaygroundIntroductionView: View {
     @EnvironmentObject private var router: NavRouter
 
+    private enum Focus: Hashable { case title, next }
+    @AccessibilityFocusState private var focus: Focus?
+
+
     var body: some View {
         GeometryReader { geo in
             ZStack {
@@ -55,6 +59,8 @@ struct PlaygroundIntroductionView: View {
                             .padding(10)
                     }
                     .buttonStyle(.borderedProminent)
+                    .accessibilityLabel("Next")
+                    .accessibilityHint("Opens the convolution playground.")
 
                     Spacer()
 
@@ -67,6 +73,8 @@ struct PlaygroundIntroductionView: View {
                                 .padding()
                         }
                         .buttonStyle(.bordered)
+                        .accessibilityLabel("Back")
+                        .accessibilityHint("Returns to the previous screen.")
 
                         Spacer()
                     }

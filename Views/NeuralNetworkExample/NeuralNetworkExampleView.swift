@@ -13,6 +13,9 @@ struct NeuralNetworkExampleView: View {
 
     @State private var loopTask: Task<Void, Never>?
 
+    private enum Focus: Hashable { case title, next }
+    @AccessibilityFocusState private var focus: Focus?
+
     var body: some View {
         GeometryReader { geo in
             ZStack {
@@ -42,13 +45,17 @@ struct NeuralNetworkExampleView: View {
                                     .resizable()
                                     .interpolation(.none)
                                     .scaledToFit()
+                                    .accessibilityLabel("Drawn number seven in pixel art")
 
                                 outputCell(vm.outEdge, label: "Edge Detect")
+                                    .accessibilityLabel("Traces drawn number seven in pixel art")
                             }
 
                             GridRow {
                                 outputCell(vm.outSobelX, label: "Sobel X")
+                                    .accessibilityLabel("Drawn number seven in pixel art with only vertical lines")
                                 outputCell(vm.outSobelY, label: "Sobel Y")
+                                    .accessibilityLabel("Drawn number seven in pixel art with only horizontal lines")
                             }
                         }
                         .frame(width: geo.size.width * 0.55)
@@ -79,6 +86,8 @@ struct NeuralNetworkExampleView: View {
                                 .padding(10)
                         }
                         .buttonStyle(.bordered)
+                        .accessibilityLabel("Back")
+                        .accessibilityHint("Returns to the previous screen.")
 
                         Spacer()
 
@@ -90,6 +99,8 @@ struct NeuralNetworkExampleView: View {
                                 .padding(10)
                         }
                         .buttonStyle(.borderedProminent)
+                        .accessibilityLabel("Next")
+                        .accessibilityHint("Opens the playground introduction.")
                     }
                 }
                 .padding(.vertical, 40)

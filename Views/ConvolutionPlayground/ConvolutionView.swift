@@ -48,8 +48,14 @@ struct ConvolutionView: View {
                                 .scaledToFit()
                                 .overlay(kernelOverlay)
                                 .clipped()
+                                .accessibilityElement(children: .ignore)
+                                .accessibilityAddTraits(.isImage)
+                                .accessibilityLabel("Original image")
+                                .accessibilityHint(
+                                    "Input image used for the convolution."
+                                )
                         } else {
-                            Text("Asset not found")
+                            Text("Image not found")
                         }
                     }
 
@@ -65,6 +71,15 @@ struct ConvolutionView: View {
                                 .scaledToFit()
                                 .overlay(kernelOverlay)
                                 .clipped()
+                                .accessibilityElement(children: .ignore)
+                                .accessibilityAddTraits(.isImage)
+                                .accessibilityLabel("Result image")
+                                .accessibilityValue(
+                                    "Kernel: \(vm.selectedPreset.rawValue). \(vm.selectedPreset.isBlur ? "Intensity: \(vm.blurIntensity.rawValue)." : "")"
+                                )
+                                .accessibilityHint(
+                                    "Output after applying the selected kernel."
+                                )
                         }
                     }
                 }
@@ -77,13 +92,14 @@ struct ConvolutionView: View {
                                 .foregroundStyle(.white)
 
                             Menu {
-                                ForEach(KernelPreset.allCases.reversed()) { preset in
+                                ForEach(KernelPreset.allCases.reversed()) {
+                                    preset in
                                     Button {
                                         vm.selectedPreset = preset
                                         vm.setPreset(preset)
                                     } label: {
-                                            Text(preset.rawValue)
-                                                .font(.system(size: 22))
+                                        Text(preset.rawValue)
+                                            .font(.system(size: 22))
                                     }
                                 }
                             } label: {
@@ -94,6 +110,9 @@ struct ConvolutionView: View {
                                     Image(systemName: "chevron.up.chevron.down")
                                 }
                             }
+                            .accessibilityLabel("Kernel")
+                            .accessibilityValue(vm.selectedPreset.rawValue)
+                            .accessibilityHint("Double tap to choose a kernel.")
                         }
 
                         Spacer()
@@ -104,12 +123,13 @@ struct ConvolutionView: View {
                                 .foregroundStyle(.white)
 
                             Menu {
-                                ForEach(BlurIntensity.allCases.reversed()) { intensity in
+                                ForEach(BlurIntensity.allCases.reversed()) {
+                                    intensity in
                                     Button {
                                         vm.setBlurIntensity(intensity)
                                     } label: {
-                                            Text(intensity.rawValue)
-                                                .font(.system(size: 22))
+                                        Text(intensity.rawValue)
+                                            .font(.system(size: 22))
                                     }
                                 }
                             } label: {
@@ -121,6 +141,13 @@ struct ConvolutionView: View {
                                 }
                             }
                             .disabled(!vm.selectedPreset.isBlur)
+                            .accessibilityLabel("Intensity")
+                            .accessibilityValue(vm.blurIntensity.rawValue)
+                            .accessibilityHint(
+                                vm.selectedPreset.isBlur
+                                    ? "Double tap to choose blur intensity."
+                                    : "Available only for blur kernels."
+                            )
 
                         }
                     }
@@ -139,7 +166,9 @@ struct ConvolutionView: View {
                                 .font(.system(size: 26))
                                 .padding(10)
                         }
-                            .buttonStyle(.bordered)
+                        .buttonStyle(.bordered)
+                        .accessibilityLabel("Step once")
+                        .accessibilityHint("Advances the scan by one step.")
 
                         Button {
                             vm.primaryAction()
@@ -154,6 +183,13 @@ struct ConvolutionView: View {
                         }
                         .clipShape(.circle)
                         .buttonStyle(.borderedProminent)
+                        .accessibilityLabel(vm.isRunning ? "Pause" : "Play")
+                        .accessibilityValue(vm.isRunning ? "Running" : "Paused")
+                        .accessibilityHint(
+                            vm.isRunning
+                                ? "Pauses the convolution scan."
+                                : "Starts the convolution scan."
+                        )
 
                         Button {
                             vm.reset()
@@ -162,13 +198,18 @@ struct ConvolutionView: View {
                                 .font(.system(size: 26))
                                 .padding(10)
                         }
-                            .buttonStyle(.bordered)
+                        .buttonStyle(.bordered)
+                        .accessibilityLabel("Reset")
+                        .accessibilityHint(
+                            "Resets the scan position and clears the result."
+                        )
                     }
 
                     HStack(spacing: 24) {
                         Text("Speed")
                             .foregroundStyle(.white)
                             .font(.customBodySmall)
+                            .accessibilityHidden(true)
 
                         LogSlider(
                             value: $vm.pixelsPerTick,
@@ -181,37 +222,47 @@ struct ConvolutionView: View {
                             .font(.customBodySmall)
                             .foregroundStyle(.white)
                             .frame(width: 140, alignment: .trailing)
+                            .accessibilityHidden(true)
                     }
+                    .accessibilityElement(children: .ignore)
+                    .accessibilityLabel("Speed")
+                    .accessibilityValue("\(Int(vm.pixelsPerTick)) pixels per step")
+                    .accessibilityHint("Adjusts how fast the kernel scans the image.")
                 }
 
                 HStack(spacing: 16) {
                     Image(systemName: "info.circle")
                         .font(.customBody)
                         .foregroundStyle(.cyan)
+                        .accessibilityHidden(true)
 
                     Text(vm.selectedPreset.description)
                         .foregroundStyle(.white)
                         .font(.customBodySmall)
+                        .accessibilityHidden(true)
                 }
                 .padding(20)
                 .background {
                     RoundedRectangle(cornerRadius: 6)
                         .stroke(.cyan, lineWidth: 2)
                 }
+                .accessibilityElement(children: .ignore)
+                .accessibilityLabel("Kernel description")
+                .accessibilityValue(vm.selectedPreset.description)
 
                 Spacer()
 
                 HStack {
                     Button {
                         router.pop()
-                        } label: {
-                            Text("Back")
-                                .font(.system(size: 24))
-                                .padding()
-                        }
-                        .buttonStyle(.bordered)
+                    } label: {
+                        Text("Back")
+                            .font(.system(size: 24))
+                            .padding()
+                    }
+                    .buttonStyle(.bordered)
 
-                        Spacer()
+                    Spacer()
                 }
             }
             .navigationBarBackButtonHidden()

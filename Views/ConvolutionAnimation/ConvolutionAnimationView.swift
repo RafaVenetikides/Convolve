@@ -26,15 +26,22 @@ struct ConvolutionAnimationView: View {
             .clipShape(.circle)
             .buttonStyle(.borderedProminent)
             .disabled(vm.stage == .original)
+            .accessibilityLabel("Previous step")
+            .accessibilityHint(
+                "Moves one step back in the convolution animation."
+            )
 
             VStack {
                 header
+                    .accessibilityHidden(true)
 
                 blocksSection
                     .frame(minHeight: 150, alignment: .top)
+                    .accessibilityHidden(true)
 
                 marchingSection
                     .frame(minHeight: 70, alignment: .top)
+                    .accessibilityHidden(true)
             }
             .frame(minWidth: 400)
 
@@ -53,6 +60,8 @@ struct ConvolutionAnimationView: View {
                 vm.stage == .shiftReady
                     && vm.shift >= vm.convResult.count - 1
             )
+            .accessibilityLabel("Next step")
+                        .accessibilityHint("Moves one step forward in the convolution animation.")
         }
         .padding()
     }
@@ -231,7 +240,7 @@ struct ConvolutionAnimationView: View {
                     HStack(spacing: 6) {
                         Text("= ")
                             .foregroundStyle(.white)
-                        
+
                         Text("\(vm.convResult[vm.shift])")
                             .foregroundStyle(.yellow)
                             .font(.headline)

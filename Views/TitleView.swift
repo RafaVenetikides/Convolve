@@ -9,8 +9,10 @@ import SwiftUI
 
 struct TitleView: View {
     @EnvironmentObject private var router: NavRouter
-    @State private var isSpinning = false
     @StateObject private var vm = ConvolutionViewModel()
+
+    private enum FocusEnum: Hashable { case start, playground }
+    @AccessibilityFocusState private var focus: FocusEnum?
 
     private let kernelCycle: [KernelSpec] = [
         .init(
@@ -19,7 +21,7 @@ struct TitleView: View {
             weights: [
                 0, 0, 0,
                 0, 1, 0,
-                0, 0, 0
+                0, 0, 0,
             ]
         ),
         .init(
@@ -58,7 +60,11 @@ struct TitleView: View {
                                 .interpolation(.none)
                                 .scaledToFit()
                                 .frame(width: geo.size.width * 0.8)
-                                .overlay(resultKernelOverlay)
+                                .overlay(
+                                    resultKernelOverlay.accessibilityHidden(
+                                        true
+                                    )
+                                )
                         } else {
                             RoundedRectangle(cornerRadius: 12)
                                 .fill(.white.opacity(0.08))
@@ -74,10 +80,16 @@ struct TitleView: View {
                                 )
                         }
                     }
+                    .accessibilityElement(children: .ignore)
+                    .accessibilityLabel("Convolution app title")
+                    .accessibilityValue(
+                        "Kernel: \(kernelCycle[kernelIndex].name)"
+                    )
+                    .accessibilityHint("The kernel changes automatically")
 
                     Spacer()
 
-                    Button{
+                    Button {
                         router.push(.intro)
                     } label: {
                         Text("Start")
@@ -87,8 +99,11 @@ struct TitleView: View {
                     }
                     .buttonStyle(.borderedProminent)
                     .padding(.bottom, 40)
+                    .accessibilityLabel("Start")
+                    .accessibilityHint("Start the lesson on convolution")
+                    .accessibilityFocused($focus, equals: .start)
 
-                    Button{
+                    Button {
                         router.push(.playgroundMenu)
                     } label: {
                         Text("Playground")
@@ -97,6 +112,11 @@ struct TitleView: View {
                             .padding(10)
                     }
                     .buttonStyle(.borderedProminent)
+                    .accessibilityLabel("Playground")
+                    .accessibilityHint(
+                        "Opens the playground to test kernels on images."
+                    )
+                    .accessibilityFocused($focus, equals: .playground)
 
                     Spacer()
                 }
@@ -148,7 +168,9 @@ struct TitleView: View {
         cycleTask?.cancel()
         cycleTask = Task { @MainActor in
             while !Task.isCancelled {
-                try? await Task.sleep(nanoseconds: UInt64(seconds * 1_000_000_000))
+                try? await Task.sleep(
+                    nanoseconds: UInt64(seconds * 1_000_000_000)
+                )
 
                 kernelIndex = (kernelIndex + 1) % kernelCycle.count
                 let next = kernelCycle[kernelIndex]

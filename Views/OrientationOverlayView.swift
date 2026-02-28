@@ -30,7 +30,14 @@ struct OrientationOverlayView: View {
                 .multilineTextAlignment(.center)
             }
             .padding(22)
-            .glassEffect(in: .rect(cornerRadius: 18))
+            .background(
+                .ultraThinMaterial,
+                in: RoundedRectangle(cornerRadius: 18, style: .continuous)
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: 18, style: .continuous)
+                    .stroke(.white.opacity(0.12), lineWidth: 1)
+            )
         }
         .allowsHitTesting(true)
     }
