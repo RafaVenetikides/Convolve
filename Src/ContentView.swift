@@ -32,3 +32,7 @@ struct ContentView: View {
         .environmentObject(router)
     }
 }
+
+#Preview {
+    ContentView()
+}

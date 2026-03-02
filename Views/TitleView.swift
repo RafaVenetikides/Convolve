@@ -96,6 +96,7 @@ struct TitleView: View {
                             .foregroundStyle(.white)
                             .font(.system(size: 30, weight: .bold))
                             .padding(10)
+                            .padding(.horizontal, 40)
                     }
                     .buttonStyle(.borderedProminent)
                     .padding(.bottom, 40)
@@ -111,7 +112,7 @@ struct TitleView: View {
                             .font(.system(size: 30, weight: .bold))
                             .padding(10)
                     }
-                    .buttonStyle(.borderedProminent)
+                    .buttonStyle(.bordered)
                     .accessibilityLabel("Playground")
                     .accessibilityHint(
                         "Opens the playground to test kernels on images."
